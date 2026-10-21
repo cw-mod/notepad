@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CatWar: Notepad
 // @namespace    catwar-notepad
-// @version      0.4.18
+// @version      0.4.19
 // @description  Сворачиваемый мини-блокнот с вкладками
 // @author       вп
 // @match        *://catwar.su/*
@@ -293,8 +293,9 @@
     .cw-np-sec-wrap {
       flex: 1;
       display: flex; flex-direction: column;
-      padding: 8px 10px 0 10px;
+      padding: 0;
       min-height: 100px;
+      background: var(--cw-bg-input);
     }
     .cw-np-sec-content {
       flex: 1;
@@ -303,9 +304,9 @@
       color: var(--cw-text);
       min-height: 80px;
       overflow-y: auto;
-      background: var(--cw-bg-input);
-      border-radius: 6px;
-      padding: 8px 10px;
+      background: transparent;
+      border-radius: 0;
+      padding: 10px 12px;
     }
     .cw-np-sec-content a {
       color: var(--cw-link);
@@ -319,24 +320,24 @@
       width: 100%; min-height: 120px;
       flex: 1;
       resize: vertical;
-      background: var(--cw-bg-input);
+      background: transparent;
       color: var(--cw-text);
-      border: 1px solid var(--cw-accent2);
-      border-radius: 6px;
-      padding: 6px 8px;
+      border: none;
+      border-radius: 0;
+      padding: 10px 12px;
       font-size: 12.5px; line-height: 1.5;
       font-family: inherit;
       display: none;
       min-height: 120px;
     }
     .cw-np-sec-textarea.editing { display: block; }
-    .cw-np-sec-textarea:focus { outline: none; box-shadow: 0 0 0 2px rgba(179,136,255,0.3); }
+    .cw-np-sec-textarea:focus { outline: none; }
 
     /* ---------- BB-CODE TOOLBAR (above textarea) ---------- */
     .cw-np-bbbar {
       display: none; flex-wrap: wrap; gap: 3px;
       padding: 4px 6px;
-      margin-bottom: 6px;
+      margin: 6px 8px;
       background: color-mix(in srgb, var(--cw-bg-input) 80%, transparent);
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 6px;
@@ -354,6 +355,7 @@
       white-space: nowrap;
       transition: background .12s ease, transform .1s ease;
     }
+    .cw-np-bbbtn svg { vertical-align: -2px; }
     .cw-np-bbbtn:hover { background: var(--cw-accent2); color: #fff; transform: translateY(-1px); }
     .cw-np-bbbtn:active { transform: translateY(0); }
     .cw-np-bbbtn.sep { background: transparent; border: none; cursor: default; padding: 3px 2px; opacity: 0.4; }
@@ -634,6 +636,12 @@
     'folder-down': '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /> <path d="M12 10v6" /> <path d="m15 13-3 3-3-3" />',
     'folder-up': '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /> <path d="M12 10v6" /> <path d="m9 13 3-3 3 3" />',
     'notebook-pen': '<path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4" /> <path d="M2 6h4" /> <path d="M2 10h4" /> <path d="M2 14h4" /> <path d="M2 18h4" /> <path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" />',
+    'quote': '<path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z" /> <path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z" />',
+    'code': '<path d="m16 18 6-6-6-6" /> <path d="m8 6-6 6 6 6" />',
+    'eye-off': '<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" /> <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" /> <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" /> <path d="m2 2 20 20" />',
+    'align-center': '<path d="M21 5H3" /> <path d="M17 12H7" /> <path d="M19 19H5" />',
+    'image': '<rect width="18" height="18" x="3" y="3" rx="2" ry="2" /> <circle cx="9" cy="9" r="2" /> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />',
+    'link': '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /> <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />',
   };
 
   // Render an icon: icon('lock', 14) -> inline svg markup
@@ -1424,15 +1432,15 @@
         <span class="cw-np-bbbtn" data-bb="h2" title="">H2</span>
         <span class="cw-np-bbbtn" data-bb="hr" title="">—</span>
         <span class="cw-np-bbbtn sep">|</span>
-        <span class="cw-np-bbbtn" data-bb="quote" title="">💬</span>
-        <span class="cw-np-bbbtn" data-bb="code" title="">⌘</span>
-        <span class="cw-np-bbbtn" data-bb="spoiler" title="">👁</span>
+        <span class="cw-np-bbbtn" data-bb="quote" title="">${icon('quote', 12)}</span>
+        <span class="cw-np-bbbtn" data-bb="code" title="">${icon('code', 12)}</span>
+        <span class="cw-np-bbbtn" data-bb="spoiler" title="">${icon('eye-off', 12)}</span>
         <span class="cw-np-bbbtn sep">|</span>
-        <span class="cw-np-bbbtn" data-bb="center" title="">⇔</span>
-        <span class="cw-np-bbbtn" data-bb="list" title="">• ☰</span>
+        <span class="cw-np-bbbtn" data-bb="center" title="">${icon('align-center', 12)}</span>
+        <span class="cw-np-bbbtn" data-bb="list" title="">${icon('list', 12)}</span>
         <span class="cw-np-bbbtn sep">|</span>
-        <span class="cw-np-bbbtn" data-bb="img" title="">🖼</span>
-        <span class="cw-np-bbbtn" data-bb="url" title="">🔗</span>
+        <span class="cw-np-bbbtn" data-bb="img" title="">${icon('image', 12)}</span>
+        <span class="cw-np-bbbtn" data-bb="url" title="">${icon('link', 12)}</span>
         <span class="cw-np-bbbtn sep">|</span>
         <span class="cw-np-bb-color-row">
           <input type="color" data-bb-color="color" value="#b388ff" title="">
