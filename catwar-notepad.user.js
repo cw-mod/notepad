@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CatWar: Notepad
 // @namespace    catwar-notepad
-// @version      1.4.9
+// @version      1.4.10
 // @description  Сворачиваемый мини-блокнот с вкладками
 // @author       вп
 // @match        *://catwar.su/*
@@ -700,7 +700,8 @@
   // tab overflow menu (floating, appended to body so it can extend past panel edges)
   const tabMenu = document.createElement('div');
   tabMenu.className = 'cw-np-tab-menu';
-  document.body.appendChild(tabMenu);
+  // Inside root so the menu inherits the --cw-* palette (root gets the vars).
+  root.appendChild(tabMenu);
   let tabMenuTrigger = null;
 
   // Sections currently overflowing the tab bar (hidden from the row,
@@ -814,6 +815,17 @@
    * ============================================================ */
   function applyColors() {
     const c = state.colors;
+    // Full set on root: children that live outside the panel
+    // (tab menu, sparkles) also inherit the palette.
+    root.style.setProperty('--cw-bg', c.bg);
+    root.style.setProperty('--cw-bg-input', c.bgInput);
+    root.style.setProperty('--cw-text', c.text);
+    root.style.setProperty('--cw-link', c.link);
+    root.style.setProperty('--cw-border', c.border);
+    root.style.setProperty('--cw-header', c.header);
+    root.style.setProperty('--cw-accent', c.accent);
+    root.style.setProperty('--cw-accent2', c.accent2);
+    root.style.setProperty('--cw-sparkle', c.sparkle);
     panel.style.setProperty('--cw-bg', c.bg);
     panel.style.setProperty('--cw-bg-input', c.bgInput);
     panel.style.setProperty('--cw-text', c.text);
