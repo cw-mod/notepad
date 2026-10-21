@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CatWar: Notepad
 // @namespace    catwar-notepad
-// @version      1.0.0
+// @version      1.1.0
 // @description  Сворачиваемый мини-блокнот с вкладками
 // @author       кошечка
 // @match        *://catwar.su/*
@@ -332,8 +332,10 @@
     .cw-np-sec-content a:hover { filter: brightness(1.15); }
     .cw-np-sec-content.editing { display: none; }
     .cw-np-sec-textarea {
-      width: 100%; min-height: 120px;
-      flex: 1;
+      width: 100%;
+      min-height: 120px;
+      height: 240px;
+      flex: 0 1 auto;
       resize: vertical;
       background: transparent;
       color: var(--cw-text);
@@ -343,7 +345,6 @@
       font-size: 12.5px; line-height: 1.5;
       font-family: inherit;
       display: none;
-      min-height: 120px;
     }
     .cw-np-sec-textarea.editing { display: block; }
     .cw-np-sec-textarea:focus { outline: none; }
@@ -427,6 +428,33 @@
     .cw-np-sec-content .cw-bb-spoiler summary::before { content: '▸ '; }
     .cw-np-sec-content .cw-bb-spoiler[open] summary::before { content: '▾ '; }
     .cw-np-sec-content .cw-bb-spoiler:not([open]) > *:not(summary) { display: none; }
+
+    /* [copy]text[/copy] — clickable chip; click copies textContent to clipboard */
+    .cw-np-sec-content .cw-bb-copy {
+      display: inline-block;
+      padding: 2px 8px;
+      background: color-mix(in srgb, var(--cw-accent2) 18%, transparent);
+      border: 1px solid color-mix(in srgb, var(--cw-accent2) 40%, transparent);
+      border-radius: 5px;
+      color: var(--cw-text);
+      cursor: pointer;
+      user-select: none;
+      font-weight: 600;
+      font-size: 11.5px;
+      transition: background .12s ease, transform .1s ease, color .12s ease, border-color .12s ease;
+    }
+    .cw-np-sec-content .cw-bb-copy:hover {
+      background: var(--cw-accent2);
+      color: #fff;
+      border-color: transparent;
+      transform: translateY(-1px);
+    }
+    .cw-np-sec-content .cw-bb-copy:active { transform: translateY(0); }
+    .cw-np-sec-content .cw-bb-copy.copied {
+      background: transparent;
+      color: var(--cw-accent2);
+      border-color: var(--cw-accent2);
+    }
 
     .cw-np-empty {
       padding: 20px 10px;
@@ -658,6 +686,8 @@
     'align-center': '<path d="M21 5H3" /> <path d="M17 12H7" /> <path d="M19 19H5" />',
     'image': '<rect width="18" height="18" x="3" y="3" rx="2" ry="2" /> <circle cx="9" cy="9" r="2" /> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />',
     'link': '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /> <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />',
+    'clipboard': '<rect width="8" height="4" x="8" y="2" rx="1" ry="1" /> <path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2" />',
+    'clipboard-check': '<path d="M11.5 16.5 14 19l5-5" /> <path d="M8 21h8a2 2 0 0 0 2-2V7l-2-2H6L4 7v12a2 2 0 0 0 2 2Z" /> <path d="M16 3v4" /> <path d="M8 3v4" />',
   };
 
   // Render an icon: icon('lock', 14) -> inline svg markup
@@ -1175,6 +1205,12 @@
     s = s.replace(/\[img\](https?:\/\/[^\]]+)\[\/img\]/gi,
       (m, url) => `<img class="cw-bb-img" src="${url}" alt="" loading="lazy" />`);
 
+    // 5b. [copy]text[/copy] — clickable chip; click copies the (rendered) textContent.
+    //     Processed AFTER [img]/[url] but BEFORE [b]/[i]/[u]/[s] — that way
+    //     formatting inside [copy] still renders visually, and on click we
+    //     read textContent which is the rendered plain text (without tags).
+    s = s.replace(/\[copy\]([\s\S]*?)\[\/copy\]/gi, '<span class="cw-bb-copy">$1</span>');
+
     // 6. [color=X]text[/color]
     s = s.replace(/\[color=([^\]]+)\]([\s\S]*?)\[\/color\]/gi, (m, col, inner) => {
       const c = sanitizeColor(col);
@@ -1248,6 +1284,28 @@
 
   function genId() {
     return 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  }
+
+  // Clipboard copy — uses the async Clipboard API when available,
+  // falls back to a hidden textarea + execCommand for old browsers / HTTPS restrictions.
+  function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+    } else {
+      fallbackCopy(text);
+    }
+  }
+  function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
   }
 
   function nextDefaultName() {
@@ -1458,6 +1516,7 @@
         <span class="cw-np-bbbtn sep">|</span>
         <span class="cw-np-bbbtn" data-bb="img" title="">${icon('image', 12)}</span>
         <span class="cw-np-bbbtn" data-bb="url" title="">${icon('link', 12)}</span>
+        <span class="cw-np-bbbtn" data-bb="copy" title="">${icon('clipboard', 12)}</span>
         <span class="cw-np-bbbtn sep">|</span>
         <span class="cw-np-bb-color-row">
           <input type="color" data-bb-color="color" value="#b388ff" title="">
@@ -1549,6 +1608,23 @@
         ev.preventDefault();
         window.open(a.href, '_blank', 'noopener,noreferrer');
         spawnSparkleBurst(ev.clientX, ev.clientY, 5);
+        return;
+      }
+      // [copy] chip — copies the rendered plain text (textContent) to clipboard
+      const copyEl = ev.target.closest('.cw-bb-copy');
+      if (copyEl) {
+        ev.preventDefault();
+        const text = copyEl.textContent || '';
+        copyToClipboard(text);
+        // Visual feedback: swap text to "✓ Скопировано" briefly
+        const orig = copyEl.innerHTML;
+        copyEl.classList.add('copied');
+        copyEl.textContent = '✓ Скопировано';
+        setTimeout(() => {
+          copyEl.classList.remove('copied');
+          copyEl.innerHTML = orig;
+        }, 1200);
+        spawnSparkleBurst(ev.clientX, ev.clientY, 6);
       }
     });
 
