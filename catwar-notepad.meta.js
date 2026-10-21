@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CatWar: Notepad
 // @namespace    catwar-notepad
-// @version      0.4.21
+// @version      1.0.0
 // @description  Сворачиваемый мини-блокнот с вкладками
 // @author       кошечка
 // @match        *://catwar.su/*
