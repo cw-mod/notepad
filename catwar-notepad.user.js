@@ -1974,7 +1974,7 @@
         v = '#' + v.slice(1).split('').map(c => c + c).join('');
         inp.value = v;
       }
-      if (!/^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$/.test(v)) {
+      if (!/^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$/.test(v) && !/^rgba?\([^)]*\)$/.test(v)) {
         inp.value = state.colors[key];
         return;
       }
