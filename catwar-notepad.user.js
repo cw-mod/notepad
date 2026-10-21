@@ -181,7 +181,7 @@
       color: var(--cw-text);
       border: 1.5px solid var(--cw-border);
       border-radius: 14px;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.05) inset, 0 0 30px rgba(179,136,255,0.25);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.05) inset;
       overflow: hidden;
       pointer-events: auto;
       backdrop-filter: blur(6px);
