@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CatWar: Notepad
 // @namespace    catwar-notepad
-// @version      0.4.20
+// @version      0.4.21
 // @description  Сворачиваемый мини-блокнот с вкладками
 // @author       вп
 // @match        *://catwar.su/*
@@ -213,6 +213,8 @@
     .cw-np-btn.primary { background: var(--cw-accent2); border-color: transparent; color: #fff; font-weight: 600; }
     .cw-np-btn.primary:hover { filter: brightness(1.1); }
     .cw-np-btn.danger { background: rgba(231,76,60,0.18); border-color: rgba(231,76,60,0.4); }
+    .cw-np-iconbtn.danger { background: rgba(231,76,60,0.12); border-color: rgba(231,76,60,0.25); }
+    .cw-np-iconbtn.danger:hover { background: rgba(231,76,60,0.55); border-color: rgba(231,76,60,0.5); }
     .cw-np-btn.danger:hover { background: rgba(231,76,60,0.35); }
     .cw-np-btn.active { background: var(--cw-accent2); color: #fff; border-color: transparent; }
     .cw-np-btn.open { background: var(--cw-accent2); color: #fff; border-color: transparent; }
@@ -646,6 +648,7 @@
     'chevron-right': '<path d="m9 18 6-6-6-6" />',
     'pencil': '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /> <path d="m15 5 4 4" />',
     'save': '<path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" /> <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" /> <path d="M7 3v4a1 1 0 0 0 1 1h7" />',
+    'trash-2': '<path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />',
     'folder-down': '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /> <path d="M12 10v6" /> <path d="m15 13-3 3-3-3" />',
     'folder-up': '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /> <path d="M12 10v6" /> <path d="m9 13 3-3 3 3" />',
     'notebook-pen': '<path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4" /> <path d="M2 6h4" /> <path d="M2 10h4" /> <path d="M2 14h4" /> <path d="M2 18h4" /> <path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" />',
@@ -744,6 +747,7 @@
       </div>
       <button class="cw-np-btn cw-np-iconbtn" data-act="import" title="">${icon('folder-down', 16)}</button>
       <button class="cw-np-btn cw-np-iconbtn" data-act="export" title="">${icon('folder-up', 16)}</button>
+      <button class="cw-np-btn cw-np-iconbtn danger" data-act="clearAll" title="Удалить все вкладки">${icon('trash-2', 16)}</button>
     </div>
   `;
   root.appendChild(fab);
@@ -1745,6 +1749,16 @@
 
   panel.querySelector('.cw-np-footer [data-act="export"]').addEventListener('click', exportData);
   panel.querySelector('.cw-np-footer [data-act="import"]').addEventListener('click', () => fileInput.click());
+  panel.querySelector('.cw-np-footer [data-act="clearAll"]').addEventListener('click', (e) => {
+    spawnSparkleBurst(e.clientX, e.clientY, 6);
+    if (!confirm('Удалить все вкладки вместе с содержимым? Это действие нельзя отменить.')) return;
+    const fresh = { id: 's' + Date.now(), title: 'Заметки 1', content: '' };
+    state.sections = [fresh];
+    state.activeId = fresh.id;
+    store.set('sections', state.sections);
+    store.set('activeId', state.activeId);
+    renderSections();
+  });
   fileInput.addEventListener('change', (e) => {
     if (e.target.files[0]) importData(e.target.files[0]);
     fileInput.value = '';
