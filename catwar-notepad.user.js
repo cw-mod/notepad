@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CatWar: Notepad
 // @namespace    catwar-notepad
-// @version      0.4.12
+// @version      0.4.13
 // @description  Сворачиваемый мини-блокнот с вкладками
 // @author       вп
 // @match        *://catwar.su/*
@@ -1480,17 +1480,20 @@
       }
     });
 
-    // After render: keep the active tab inside the visible strip area,
-    // then sync the ◀ ▶ arrows (instant jump — no animation on re-render).
-    const activeTab = strip.querySelector('.cw-np-tab.active');
-    if (activeTab) {
-      const sl = strip.scrollLeft;
-      const aL = activeTab.offsetLeft;
-      const aR = aL + activeTab.offsetWidth;
-      if (aL < sl + 2) strip.scrollLeft = Math.max(0, aL - 6);
-      else if (aR > sl + strip.clientWidth - 2) strip.scrollLeft = aR - strip.clientWidth + 6;
-    }
-    requestAnimationFrame(updateTabScroll);
+    // After render: sync arrows first (their visibility changes the strip
+    // width), then bring the active tab into view (rect-based, layout-stable),
+    // then re-sync arrows in case the scroll flipped their state.
+    requestAnimationFrame(() => {
+      updateTabScroll();
+      const activeTab = strip.querySelector('.cw-np-tab.active');
+      if (activeTab) {
+        const sr = strip.getBoundingClientRect();
+        const ar = activeTab.getBoundingClientRect();
+        if (ar.left < sr.left - 1) strip.scrollLeft = Math.max(0, strip.scrollLeft + (ar.left - sr.left) - 6);
+        else if (ar.right > sr.right + 1) strip.scrollLeft = strip.scrollLeft + (ar.right - sr.right) + 6;
+      }
+      updateTabScroll();
+    });
   }
 
   function setActive(id) {
