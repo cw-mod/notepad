@@ -3,7 +3,7 @@
 // @namespace    catwar-notepad
 // @version      0.4.21
 // @description  Сворачиваемый мини-блокнот с вкладками
-// @author       вп
+// @author       кошечка
 // @match        *://catwar.su/*
 // @match        *://*.catwar.su/*
 // @match        *://catwar.net/*
