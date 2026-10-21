@@ -71,7 +71,8 @@
       accent:   '#b388ff',
       accent2:  '#ff7eb3',
       sparkle:  '#ffd6ff'
-    }
+    },
+    fontSize: 15
   };
 
   const state = {
@@ -82,6 +83,7 @@
     collapsed: store.get('collapsed', DEFAULTS.collapsed),
     colors:    Object.assign({}, DEFAULTS.colors, store.get('colors', {})),
     sparklesEnabled: store.get('sparklesEnabled', true),
+    fontSize: store.get('fontSize', DEFAULTS.fontSize),
     settingsOpen: false,
     sparkleTimer: null
   };
@@ -98,6 +100,13 @@
       store.set('colors', state.colors);
     }
   })();
+
+  // Migrate: if the user has the OLD default font size (14) persisted from
+  // v1.0.1's initial release, silently upgrade to the new default (15).
+  if (state.fontSize === 14) {
+    state.fontSize = DEFAULTS.fontSize;
+    store.set('fontSize', state.fontSize);
+  }
 
   // ensure at least one section
   if (!Array.isArray(state.sections) || state.sections.length === 0) {
@@ -314,7 +323,7 @@
     }
     .cw-np-sec-content {
       flex: 1;
-      font-size: 12.5px; line-height: 1.5;
+      font-size: var(--cw-font-size, 14px); line-height: 1.5;
       white-space: pre-wrap; word-wrap: break-word;
       color: var(--cw-text);
       min-height: 80px;
@@ -342,7 +351,7 @@
       border: none;
       border-radius: 0;
       padding: 10px 12px;
-      font-size: 12.5px; line-height: 1.5;
+      font-size: var(--cw-font-size, 14px); line-height: 1.5;
       font-family: inherit;
       display: none;
     }
@@ -592,24 +601,31 @@
       grid-template: none;
     }
     .cw-np-settings.open { display: block; }
-    .cw-np-set-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; }
+    .cw-np-set-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 15px; }
     .cw-np-set-row label { flex: 1; color: var(--cw-text); }
     .cw-np-set-row input[type="color"] {
-      width: 34px; height: 26px; padding: 0; border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; background: transparent; cursor: pointer;
+      width: 38px; height: 30px; padding: 0; border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; background: transparent; cursor: pointer;
     }
     .cw-np-set-row input[type="text"] {
-      flex: 2; background: rgba(0,0,0,0.35); color: var(--cw-text); border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; padding: 3px 6px; font-size: 11.5px; font-family: monospace;
+      flex: 2; background: rgba(0,0,0,0.35); color: var(--cw-text); border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; padding: 4px 8px; font-size: 14px; font-family: monospace;
+    }
+    .cw-np-set-row input[type="range"] {
+      flex: 2; height: 26px; accent-color: var(--cw-accent2); cursor: pointer; background: transparent;
+    }
+    .cw-np-set-fontsize-display {
+      font-size: 14px; font-family: monospace; color: var(--cw-text); opacity: 0.85;
+      min-width: 44px; text-align: right; flex-shrink: 0;
     }
     .cw-np-set-reset {
-      width: 100%; margin-top: 4px; padding: 5px; font-size: 11.5px;
+      width: 100%; margin-top: 4px; padding: 7px; font-size: 14px;
       background: rgba(231,76,60,0.15); border: 1px solid rgba(231,76,60,0.3); color: var(--cw-text); border-radius: 6px; cursor: pointer;
     }
     .cw-np-set-reset:hover { background: rgba(231,76,60,0.3); }
 
     /* Clickable on/off text label (e.g. for sparkles toggle) */
     .cw-np-set-toggle-text {
-      font-size: 11px; font-weight: 700;
-      padding: 3px 8px;
+      font-size: 13px; font-weight: 700;
+      padding: 4px 9px;
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.18);
       border-radius: 5px;
@@ -765,6 +781,11 @@
         <input type="color" data-color="sparkle">
         <input type="text" data-colortext="sparkle" placeholder="#fff">
         <span class="cw-np-set-toggle-text" data-toggle-text="sparkles" title="">ВКЛ</span>
+      </div>
+      <div class="cw-np-set-row">
+        <label>Размер шрифта</label>
+        <input type="range" min="10" max="24" step="0.5" value="15" data-fontsize>
+        <span class="cw-np-set-fontsize-display" data-fontsize-display>15px</span>
       </div>
       <button class="cw-np-set-reset" data-act="resetColors">Сбросить цвета</button>
     </div>
@@ -931,6 +952,7 @@
     document.documentElement.style.setProperty('--cw-accent', c.accent);
     document.documentElement.style.setProperty('--cw-accent2', c.accent2);
     document.documentElement.style.setProperty('--cw-sparkle', c.sparkle);
+    applyFontSize();
 
     // color inputs
     settings.querySelectorAll('input[type="color"]').forEach(inp => {
@@ -952,6 +974,19 @@
       return '#' + [r, g, b].map(n => n.toString(16).padStart(2, '0')).join('');
     }
     return '#000000';
+  }
+
+  // Apply font size to content + textarea via the --cw-font-size CSS var.
+  // Slider range: 10–24px, default 14 (bumped from 12.5 for readability).
+  function applyFontSize() {
+    const sz = state.fontSize;
+    const val = (typeof sz === 'number' && !isNaN(sz)) ? sz : DEFAULTS.fontSize;
+    root.style.setProperty('--cw-font-size', val + 'px');
+    panel.style.setProperty('--cw-font-size', val + 'px');
+    const slider = settings.querySelector('input[data-fontsize]');
+    const display = settings.querySelector('[data-fontsize-display]');
+    if (slider) slider.value = val;
+    if (display) display.textContent = val + 'px';
   }
 
   /* ============================================================
@@ -1877,10 +1912,25 @@
   });
   panel.querySelector('[data-act="resetColors"]').addEventListener('click', () => {
     state.colors = Object.assign({}, DEFAULTS.colors);
+    state.fontSize = DEFAULTS.fontSize;
     store.set('colors', state.colors);
+    store.set('fontSize', state.fontSize);
     applyColors();
     spawnSparkleBurst(panel.getBoundingClientRect().left + 170, panel.getBoundingClientRect().top + 200, 14);
   });
+
+  // Font size slider
+  const fontSizeSlider = settings.querySelector('input[data-fontsize]');
+  if (fontSizeSlider) {
+    fontSizeSlider.addEventListener('input', () => {
+      const v = parseFloat(fontSizeSlider.value);
+      if (!isNaN(v)) {
+        state.fontSize = v;
+        store.set('fontSize', v);
+        applyFontSize();
+      }
+    });
+  }
 
   // Sparkles toggle
   const sparklesToggle = panel.querySelector('[data-toggle-text="sparkles"]');
