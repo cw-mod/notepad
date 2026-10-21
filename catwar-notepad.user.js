@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CatWar: Notepad
 // @namespace    catwar-notepad
-// @version      0.4.16
+// @version      0.4.17
 // @description  Сворачиваемый мини-блокнот с вкладками
 // @author       вп
 // @match        *://catwar.su/*
@@ -217,7 +217,7 @@
     .cw-np-tabbar {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 8px;
       padding: 6px 6px 4px 6px;
       background: rgba(0,0,0,0.22);
       border-bottom: 1px solid rgba(255,255,255,0.08);
