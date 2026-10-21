@@ -623,7 +623,7 @@
       width: 38px; height: 30px; padding: 0; border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; background: transparent; cursor: pointer;
     }
     .cw-np-set-row input[type="text"] {
-      width: 80px; flex: none; background: rgba(0,0,0,0.35); color: var(--cw-text); border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; padding: 4px 8px; font-size: 14px; font-family: monospace;
+      width: 90px; flex: none; background: rgba(0,0,0,0.35); color: var(--cw-text); border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; padding: 4px 8px; font-size: 14px; font-family: monospace;
     }
     .cw-np-set-row input[type="range"] {
       flex: 2; height: 26px; accent-color: var(--cw-accent2); cursor: pointer; background: transparent;
