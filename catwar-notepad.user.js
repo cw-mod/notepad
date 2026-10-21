@@ -1626,13 +1626,12 @@
       const after = textarea.value.slice(end);
       const insert = `${openTag}${sel}${closeTag}`;
       textarea.value = before + insert + after;
-      // place cursor inside the wrap or select the placeholder
-      if (sel) {
-        textarea.setSelectionRange(start, start + insert.length);
-      } else {
-        const cursorPos = start + openTag.length;
-        textarea.setSelectionRange(cursorPos, cursorPos + (placeholder ? placeholder.length : 0));
-      }
+      // Select only the content BETWEEN the tags (not the tags themselves),
+      // so the user can immediately type/replace the text while keeping the
+      // BB-code tags intact.
+      const selStart = start + openTag.length;
+      const selEnd = selStart + sel.length;
+      textarea.setSelectionRange(selStart, selEnd);
       textarea.focus();
       spawnSparkleBurst(textarea.getBoundingClientRect().left + 100, textarea.getBoundingClientRect().top + 12, 4);
     }
