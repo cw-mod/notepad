@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CatWar: Notepad
 // @namespace    catwar-notepad
-// @version      0.4.11
+// @version      0.4.12
 // @description  Сворачиваемый мини-блокнот с вкладками
 // @author       вп
 // @match        *://catwar.su/*
@@ -216,15 +216,36 @@
     /* ---------- TAB BAR (sections in a row) ---------- */
     .cw-np-tabbar {
       display: flex;
-      flex-wrap: wrap;
-      overflow-y: auto;
-      max-height: 132px;
+      align-items: center;
       gap: 4px;
       padding: 6px 6px 4px 6px;
       background: rgba(0,0,0,0.22);
       border-bottom: 1px solid rgba(255,255,255,0.08);
       flex-shrink: 0;
     }
+    /* Single-row tab strip — scrolled sideways by ◀ ▶ arrows when overflowing */
+    .cw-np-tab-strip {
+      display: flex;
+      gap: 4px;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .cw-np-tab-arrow {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 24px;
+      font-size: 11px; line-height: 1;
+      color: var(--cw-text);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 7px;
+      cursor: pointer;
+      flex-shrink: 0;
+      user-select: none;
+      transition: background .15s ease, transform .12s ease;
+    }
+    .cw-np-tab-arrow:hover { background: rgba(255,255,255,0.16); transform: translateY(-1px); }
+    .cw-np-tab-arrow.hidden { display: none; }
 
     .cw-np-tab {
       display: inline-flex; align-items: center; gap: 4px;
@@ -705,16 +726,15 @@
   root.appendChild(tabMenu);
   let tabMenuTrigger = null;
 
-  // Sections currently overflowing the tab bar (hidden from the row,
-  // accessible via the ➤ dropdown). Refreshed by updateOverflowTabs().
-  let _overflowSecs = [];
+  // Single-row tab strip. When tabs overflow, ◀ ▶ arrows page the strip sideways.
+  let _tabStrip = null, _tabArrowL = null, _tabArrowR = null;
 
-  function updateOverflowTabs() {
-    // Multi-row tab bar: all tabs are always visible (flex-wrap: wrap).
-    const tabbar = body.querySelector('.cw-np-tabbar');
-    if (!tabbar) { _overflowSecs = []; return; }
-    tabbar.querySelectorAll('.cw-np-tab').forEach(t => { t.style.display = ''; });
-    _overflowSecs = [];
+  function updateTabScroll() {
+    if (!_tabStrip || !_tabArrowL || !_tabArrowR) return;
+    const canL = _tabStrip.scrollLeft > 2;
+    const canR = _tabStrip.scrollLeft + _tabStrip.clientWidth < _tabStrip.scrollWidth - 2;
+    _tabArrowL.classList.toggle('hidden', !canL);
+    _tabArrowR.classList.toggle('hidden', !canR);
   }
 
   function closeTabMenu() {
@@ -747,10 +767,7 @@
     triggerEl.classList.add('open');
 
     tabMenu.innerHTML = '';
-    // Refresh overflow data so the list is fresh, then use only the overflow sections.
-    updateOverflowTabs();
-    const secs = _overflowSecs.length ? _overflowSecs : state.sections;
-    secs.forEach(sec => {
+    state.sections.forEach(sec => {
       const item = document.createElement('div');
       item.className = 'cw-np-tab-menu-item' + (sec.id === state.activeId ? ' active' : '');
       const title = document.createElement('span');
@@ -1220,9 +1237,18 @@
 
     body.innerHTML = '';
 
-    // ----- Tab bar (sections in a row) -----
+    // ----- Tab bar (sections in a single row, ◀ ▶ arrows page sideways) -----
     const tabbar = document.createElement('div');
     tabbar.className = 'cw-np-tabbar';
+
+    const arrowL = document.createElement('div');
+    arrowL.className = 'cw-np-tab-arrow left hidden';
+    arrowL.textContent = '◀';
+    tabbar.appendChild(arrowL);
+
+    const strip = document.createElement('div');
+    strip.className = 'cw-np-tab-strip';
+    tabbar.appendChild(strip);
 
     state.sections.forEach(sec => {
       const tab = document.createElement('div');
@@ -1233,7 +1259,7 @@
         <span class="cw-np-tab-close" title="">✕</span>
       `;
       tab.querySelector('.cw-np-tab-title').textContent = sec.title;
-      tabbar.appendChild(tab);
+      strip.appendChild(tab);
 
       // click on tab (not on title, not on close) → activate
       tab.addEventListener('click', (e) => {
@@ -1254,7 +1280,7 @@
         sec.title = titleEl.textContent.trim() || 'Без названия';
         titleEl.textContent = sec.title;
         store.set('sections', state.sections);
-        requestAnimationFrame(updateOverflowTabs);
+        requestAnimationFrame(updateTabScroll);
       });
       titleEl.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') { e.preventDefault(); titleEl.blur(); }
@@ -1284,6 +1310,25 @@
         }
       });
     });
+
+    // ▶ arrow + strip wiring
+    const arrowR = document.createElement('div');
+    arrowR.className = 'cw-np-tab-arrow right hidden';
+    arrowR.textContent = '▶';
+    function scrollStripBy(delta) {
+      strip.scrollTo({ left: strip.scrollLeft + delta, behavior: 'smooth' });
+    }
+    arrowL.addEventListener('click', (e) => {
+      e.stopPropagation();
+      scrollStripBy(-strip.clientWidth * 0.8);
+    });
+    arrowR.addEventListener('click', (e) => {
+      e.stopPropagation();
+      scrollStripBy(strip.clientWidth * 0.8);
+    });
+    strip.addEventListener('scroll', updateTabScroll, { passive: true });
+    _tabStrip = strip; _tabArrowL = arrowL; _tabArrowR = arrowR;
+    tabbar.appendChild(arrowR);
 
     // "+" add-tab button — inline at the end of the tab row
     const addTab = document.createElement('div');
@@ -1435,9 +1480,17 @@
       }
     });
 
-    // After render: recompute which tabs fit and which overflow.
-    // (No more scrolling — overflow tabs hide and go to the ➤ menu.)
-    requestAnimationFrame(updateOverflowTabs);
+    // After render: keep the active tab inside the visible strip area,
+    // then sync the ◀ ▶ arrows (instant jump — no animation on re-render).
+    const activeTab = strip.querySelector('.cw-np-tab.active');
+    if (activeTab) {
+      const sl = strip.scrollLeft;
+      const aL = activeTab.offsetLeft;
+      const aR = aL + activeTab.offsetWidth;
+      if (aL < sl + 2) strip.scrollLeft = Math.max(0, aL - 6);
+      else if (aR > sl + strip.clientWidth - 2) strip.scrollLeft = aR - strip.clientWidth + 6;
+    }
+    requestAnimationFrame(updateTabScroll);
   }
 
   function setActive(id) {
@@ -1704,14 +1757,14 @@
   renderSections();
   startAmbientSparkles();
 
-  // Debounced resize — applyPositions + updateOverflowTabs are layout-reads,
+  // Debounced resize — applyPositions + updateTabScroll are layout-reads,
   // fire many times during a drag-resize.
   let _resizeT;
   window.addEventListener('resize', () => {
     clearTimeout(_resizeT);
     _resizeT = setTimeout(() => {
       applyPositions();
-      updateOverflowTabs();
+      updateTabScroll();
     }, 120);
   });
 
