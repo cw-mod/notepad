@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CatWar: Notepad
 // @namespace    catwar-notepad
-// @version      0.4.17
+// @version      0.4.18
 // @description  Сворачиваемый мини-блокнот с вкладками
 // @author       вп
 // @match        *://catwar.su/*
@@ -615,6 +615,34 @@
   }
 
   /* ============================================================
+   *  ICONS — Lucide (https://lucide.dev), ISC license.
+   *  Inlined SVGs: no CDN, works offline.
+   * ============================================================ */
+  const ICONS = {
+    'lock': '<rect width="18" height="11" x="3" y="11" rx="2" ry="2" /> <path d="M7 11V7a5 5 0 0 1 10 0v4" />',
+    'lock-open': '<rect width="18" height="11" x="3" y="11" rx="2" ry="2" /> <path d="M7 11V7a5 5 0 0 1 9.9-1" />',
+    'settings': '<path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" /> <circle cx="12" cy="12" r="3" />',
+    'list': '<path d="M3 5h.01" /> <path d="M3 12h.01" /> <path d="M3 19h.01" /> <path d="M8 5h13" /> <path d="M8 12h13" /> <path d="M8 19h13" />',
+    'x': '<path d="M18 6 6 18" /> <path d="m6 6 12 12" />',
+    'plus': '<path d="M5 12h14" /> <path d="M12 5v14" />',
+    'minus': '<path d="M5 12h14" />',
+    'square': '<rect width="18" height="18" x="3" y="3" rx="2" />',
+    'chevron-left': '<path d="m15 18-6-6 6-6" />',
+    'chevron-right': '<path d="m9 18 6-6-6-6" />',
+    'pencil': '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /> <path d="m15 5 4 4" />',
+    'save': '<path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" /> <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" /> <path d="M7 3v4a1 1 0 0 0 1 1h7" />',
+    'folder-down': '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /> <path d="M12 10v6" /> <path d="m15 13-3 3-3-3" />',
+    'folder-up': '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /> <path d="M12 10v6" /> <path d="m9 13 3-3 3 3" />',
+    'notebook-pen': '<path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4" /> <path d="M2 6h4" /> <path d="M2 10h4" /> <path d="M2 14h4" /> <path d="M2 18h4" /> <path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" />',
+  };
+
+  // Render an icon: icon('lock', 14) -> inline svg markup
+  function icon(name, size) {
+    size = size || 14;
+    return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[name] || '') + '</svg>';
+  }
+
+  /* ============================================================
    *  DOM BUILD
    * ============================================================ */
   const root = document.createElement('div');
@@ -624,7 +652,7 @@
   const fab = document.createElement('div');
   fab.className = 'cw-np-fab';
   fab.title = '';
-  fab.innerHTML = '📓';
+  fab.innerHTML = icon('notebook-pen', 22);
 
   // Panel
   const panel = document.createElement('div');
@@ -632,10 +660,10 @@
   panel.innerHTML = `
     <div class="cw-np-header" data-drag="panel">
       <div class="cw-np-title"><span class="dot"></span><span>Мини-блокнот</span></div>
-      <button class="cw-np-btn" data-act="lock" title="">🔒</button>
-      <button class="cw-np-btn" data-act="settings" title="">⚙</button>
-      <button class="cw-np-btn" data-act="tabs" title="">➤</button>
-      <button class="cw-np-btn" data-act="collapse" title="">—</button>
+      <button class="cw-np-btn" data-act="lock" title="">${icon('lock-open')}</button>
+      <button class="cw-np-btn" data-act="settings" title="">${icon('settings')}</button>
+      <button class="cw-np-btn" data-act="tabs" title="">${icon('list')}</button>
+      <button class="cw-np-btn" data-act="collapse" title="">${icon('minus')}</button>
     </div>
     <div class="cw-np-settings" data-el="settings">
       <div class="cw-np-set-row">
@@ -688,25 +716,13 @@
     </div>
     <div class="cw-np-body" data-el="body"></div>
     <div class="cw-np-footer">
-      <button class="cw-np-btn" data-act="edit" title="">✎ Редактировать</button>
-      <button class="cw-np-btn primary" data-act="save" title="" style="display:none">💾 Сохранить</button>
+      <button class="cw-np-btn" data-act="edit" title="">${icon('pencil')} Редактировать</button>
+      <button class="cw-np-btn primary" data-act="save" title="" style="display:none">${icon('save')} Сохранить</button>
       <div class="cw-np-footer-spacer">
         <span class="cw-np-credit">by <span data-author></span></span>
       </div>
-      <button class="cw-np-btn cw-np-iconbtn" data-act="import" title="">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z"/>
-          <path d="M12 17V9"/>
-          <path d="M8 13l4-4 4 4"/>
-        </svg>
-      </button>
-      <button class="cw-np-btn cw-np-iconbtn" data-act="export" title="">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z"/>
-          <path d="M12 9v8"/>
-          <path d="M8 13l4 4 4-4"/>
-        </svg>
-      </button>
+      <button class="cw-np-btn cw-np-iconbtn" data-act="import" title="">${icon('folder-down', 16)}</button>
+      <button class="cw-np-btn cw-np-iconbtn" data-act="export" title="">${icon('folder-up', 16)}</button>
     </div>
   `;
   root.appendChild(fab);
@@ -777,7 +793,7 @@
       item.appendChild(title);
       const close = document.createElement('span');
       close.className = 'cw-np-tab-menu-item-close';
-      close.textContent = '✕';
+      close.innerHTML = icon('x', 12);
       close.addEventListener('click', (ev) => {
         ev.stopPropagation();
         if (confirm(`Удалить раздел "${sec.title}"?`)) {
@@ -910,22 +926,22 @@
       fab.classList.add('locked');
       panel.classList.add('locked');
       lockBtn.classList.add('active');
-      lockBtn.innerHTML = '🔒';
+      lockBtn.innerHTML = icon('lock');
     } else {
       fab.classList.remove('locked');
       panel.classList.remove('locked');
       lockBtn.classList.remove('active');
-      lockBtn.innerHTML = '🔓';
+      lockBtn.innerHTML = icon('lock-open');
     }
   }
 
   function applyCollapsed() {
     if (state.collapsed) {
       panel.classList.add('collapsed');
-      collapseBtn.innerHTML = '☐';
+      collapseBtn.innerHTML = icon('square');
     } else {
       panel.classList.remove('collapsed');
-      collapseBtn.innerHTML = '—';
+      collapseBtn.innerHTML = icon('minus');
     }
   }
 
@@ -1244,7 +1260,7 @@
 
     const arrowL = document.createElement('div');
     arrowL.className = 'cw-np-tab-arrow left hidden';
-    arrowL.textContent = '◀';
+    arrowL.innerHTML = icon('chevron-left');
     tabbar.appendChild(arrowL);
 
     const strip = document.createElement('div');
@@ -1257,7 +1273,7 @@
       tab.dataset.id = sec.id;
       tab.innerHTML = `
         <span class="cw-np-tab-title" contenteditable="true" spellcheck="false"></span>
-        <span class="cw-np-tab-close" title="">✕</span>
+        <span class="cw-np-tab-close" title="">${icon('x', 10)}</span>
       `;
       tab.querySelector('.cw-np-tab-title').textContent = sec.title;
       strip.appendChild(tab);
@@ -1315,7 +1331,7 @@
     // ▶ arrow + strip wiring
     const arrowR = document.createElement('div');
     arrowR.className = 'cw-np-tab-arrow right hidden';
-    arrowR.textContent = '▶';
+    arrowR.innerHTML = icon('chevron-right');
     // rAF-driven ease-out animation — decelerates gently into the target
     // instead of the abrupt stop of the built-in smooth scroll.
     function animateStripTo(target) {
@@ -1364,7 +1380,7 @@
     // "+" add-tab button — inline at the end of the tab row
     const addTab = document.createElement('div');
     addTab.className = 'cw-np-tab-add';
-    addTab.textContent = '＋';
+    addTab.innerHTML = icon('plus');
     addTab.title = '';
     addTab.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1379,7 +1395,7 @@
     if (!state.activeId) {
       const empty = document.createElement('div');
       empty.className = 'cw-np-empty';
-      empty.textContent = 'Нет разделов. Нажми ＋ в строке вкладок чтобы создать первый.';
+      empty.textContent = 'Нет разделов. Нажми на плюс в строке вкладок, чтобы создать первый.';
       body.appendChild(empty);
       return;
     }
@@ -1390,7 +1406,7 @@
       store.set('activeId', null);
       const empty = document.createElement('div');
       empty.className = 'cw-np-empty';
-      empty.textContent = 'Нет разделов. Нажми ＋ в строке вкладок чтобы создать первый.';
+      empty.textContent = 'Нет разделов. Нажми на плюс в строке вкладок, чтобы создать первый.';
       body.appendChild(empty);
       return;
     }
