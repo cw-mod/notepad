@@ -175,7 +175,8 @@
       position: fixed;
       z-index: 2147483646;
       width: 360px;
-      height: 90vh;
+      min-height: 300px;
+      max-height: 90vh;
       display: flex; flex-direction: column;
       background: var(--cw-bg);
       color: var(--cw-text);
