@@ -3,95 +3,280 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CatWar: Notepad</title>
+  <title>CatWar: Notepad 📓</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <style>
     :root {
       color-scheme: dark;
+      --bg: #1c1624;
+      --bg-page: #100c16;
+      --header: #3a2658;
+      --border: #7a5cc5;
+      --accent: #b388ff;
+      --accent2: #ff7eb3;
+      --sparkle: #ffd6ff;
+      --text: #f0e9ff;
+      --link: #c4a3ff;
     }
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 24px;
-      font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
-      color: #f0e9ff;
-      background: #1c1624;
+      padding: 24px 16px;
+      font: 16px/1.55 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(1000px 600px at 15% -10%, rgba(179,136,255,0.14), transparent 60%),
+        radial-gradient(900px 600px at 110% 110%, rgba(255,126,179,0.12), transparent 60%),
+        var(--bg-page);
     }
-    main {
-      max-width: 40rem;
+
+    /* ---------- drifting sparkles (same glyphs & glow as the mod) ---------- */
+    .sparkles {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
     }
-    h1 {
-      margin: 0 0 12px;
-      font-size: 1.6rem;
+    .bg-sparkle {
+      position: absolute;
+      line-height: 1;
+      user-select: none;
+      text-shadow: 0 0 4px currentColor, 0 0 8px currentColor, 0 0 12px currentColor;
+      animation: spk var(--dur, 16s) linear infinite;
+      animation-delay: var(--delay, 0s);
+      will-change: transform, opacity;
+    }
+    @keyframes spk {
+      0%   { transform: translate(0, 0) scale(.5) rotate(0deg); opacity: 0; }
+      18%  { opacity: .9; }
+      72%  { opacity: .7; }
+      100% { transform: translate(var(--dx), var(--dy)) scale(1.05) rotate(170deg); opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .bg-sparkle { animation: none; opacity: .35; }
+    }
+
+    /* ---------- the page IS the notepad ---------- */
+    .notepad {
+      position: relative;
+      z-index: 1;
+      width: min(660px, 100%);
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow:
+        0 12px 40px rgba(0,0,0,0.55),
+        0 0 0 1px rgba(255,255,255,0.05) inset,
+        0 0 44px rgba(179,136,255,0.28);
+    }
+
+    .np-header {
+      display: flex; align-items: center; gap: 6px;
+      padding: 10px 12px;
+      background: var(--header);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      user-select: none;
+    }
+    .np-title {
+      flex: 1;
+      display: flex; align-items: center; gap: 8px;
+      font-size: 14px; font-weight: 700; letter-spacing: .3px;
+      color: var(--text);
+    }
+    .np-title .dot {
+      width: 9px; height: 9px; border-radius: 50%;
+      background: var(--accent2);
+      box-shadow: 0 0 10px var(--accent2);
+    }
+    .np-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 4px 8px;
+      font-size: 13px; line-height: 1;
+      color: var(--text);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      cursor: default;
+      transition: background .15s ease, transform .12s ease;
+    }
+    .np-btn:hover { background: rgba(255,255,255,0.16); transform: translateY(-1px); }
+
+    .np-tabbar {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 5px;
+      padding: 8px 10px 6px 10px;
+      background: rgba(0,0,0,0.22);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .np-tab {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 11px;
+      font-size: 12.5px; font-weight: 600;
+      color: var(--text);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+    }
+    .np-tab.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 0 0 2px rgba(179,136,255,0.3), 0 0 14px rgba(179,136,255,0.5);
+    }
+    .np-tab-add {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px;
+      font-size: 15px;
+      color: var(--text);
+      background: rgba(255,255,255,0.06);
+      border: 1px dashed rgba(255,255,255,0.22);
+      border-radius: 8px;
+      cursor: default;
+    }
+
+    .np-content {
+      padding: 22px 22px 8px 22px;
+    }
+    .np-content h1 {
+      margin: 0 0 10px;
+      font-size: 1.65rem;
       line-height: 1.25;
+      background: linear-gradient(90deg, var(--sparkle), var(--accent) 45%, var(--accent2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
     }
+    .np-content p { margin: 0 0 12px; }
+    .np-content .desc { opacity: .95; }
+    .np-content b { color: var(--sparkle); }
     h2 {
-      margin: 28px 0 10px;
-      font-size: 1.15rem;
-    }
-    p {
-      margin: 0 0 12px;
+      margin: 26px 0 10px;
+      font-size: 1.12rem;
+      color: var(--accent);
     }
     .downloads {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin: 8px 0 8px;
+      margin: 14px 0 8px;
     }
     .download {
       display: inline-block;
-      padding: 12px 18px;
+      padding: 13px 24px;
       font-weight: 700;
-      color: #1c1624;
+      font-size: 1.02rem;
+      color: #fff;
       text-decoration: none;
-      background: #b388ff;
-      border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent2), #ff9ec7);
+      border-radius: 999px;
+      box-shadow: 0 4px 18px rgba(255,126,179,0.4), 0 0 0 1px rgba(255,255,255,0.18) inset;
+      transition: transform .15s ease, box-shadow .15s ease;
     }
     .download:hover {
-      background: #ffd6ff;
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 6px 26px rgba(255,126,179,0.6), 0 0 0 1px rgba(255,255,255,0.25) inset;
     }
     .note {
-      font-size: 0.92rem;
-      opacity: 0.88;
+      font-size: 0.9rem;
+      opacity: 0.8;
     }
-    ol, ul {
-      margin: 0 0 12px;
-      padding-left: 1.2em;
+    ol {
+      margin: 0 0 14px;
+      padding: 12px 12px 12px 34px;
+      background: rgba(0,0,0,0.22);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 12px;
     }
-    li {
-      margin-bottom: 6px;
-    }
+    li { margin-bottom: 7px; }
+    li:last-child { margin-bottom: 0; }
     code {
       font-size: 0.9em;
+      padding: 1px 5px;
+      background: rgba(179,136,255,0.14);
+      border-radius: 5px;
     }
+    a:not(.download) { color: var(--link); }
+
+    .np-footer {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 9px 14px;
+      font-size: 11px;
+      opacity: .65;
+      background: rgba(0,0,0,0.18);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      user-select: none;
+    }
+    .np-footer .credit { font-style: italic; }
   </style>
 </head>
 <body>
-  <main>
-    <h1>CatWar: Notepad 📓</h1>
-    <p>Сворачиваемый мини-блокнот с вкладками для <strong>catwar.su</strong> и <strong>catwar.net</strong>: заметки, BB-код-редактор, экспорт и импорт, настройка цветов, перетаскивание и куча искряшек ✨.</p>
-    <p class="downloads">
-      <a class="download" href="./catwar-notepad.user.js">Скачать юзерскрипт</a>
-    </p>
-    <p class="note">Версия 1.4.11. Юзерскрипт для Tampermonkey. Автообновление: <a href="./catwar-notepad.meta.js">catwar-notepad.meta.js</a>.</p>
+  <div class="sparkles" aria-hidden="true"></div>
 
-    <h2>Установка</h2>
-    <ol>
-      <li>Установите <a href="https://www.tampermonkey.net/" rel="noopener">Tampermonkey</a>.</li>
-      <li>Нажмите «Скачать юзерскрипт» — Tampermonkey предложит установку.</li>
-      <li>Откройте <code>https://catwar.su</code> или <code>https://catwar.net</code> — блокнот уже там: тяните за кнопку 📓.</li>
-      <li>После установки скрипт сам обновляется с этой же страницы GitHub Pages.</li>
-    </ol>
+  <div class="notepad">
+    <div class="np-header">
+      <div class="np-title"><span class="dot"></span><span>Мини-блокнот</span></div>
+      <span class="np-btn">🔒</span>
+      <span class="np-btn">⚙</span>
+      <span class="np-btn">➤</span>
+      <span class="np-btn">—</span>
+    </div>
 
-    <h2>Возможности</h2>
-    <ul>
-      <li>Вкладки-заметки: добавление, переименование, удаление, меню переполнения ➤.</li>
-      <li>BB-код: жирный, курсив, ссылки, картинки, цвет, размер, спойлеры, цитаты, списки.</li>
-      <li>Экспорт и импорт заметок в JSON.</li>
-      <li>Настройка темы из 10 цветов, сворачивание, фиксация позиции, перетаскивание.</li>
-    </ul>
-  </main>
+    <div class="np-tabbar">
+      <span class="np-tab active">📓 Установка</span>
+      <span class="np-tab-add">＋</span>
+    </div>
+
+    <div class="np-content">
+      <h1>CatWar: Notepad</h1>
+      <p class="desc">Сворачиваемый мини-блокнот с вкладками для <b>catwar.su</b> и <b>catwar.net</b>: заметки с переименованием, BB-код-редактор (жирный, курсив, ссылки, картинки, спойлеры, цитаты, списки, цвета), экспорт и импорт в JSON, настройка темы из 10 цветов, сворачивание, перетаскивание — и куча искряшек ✧</p>
+      <p class="downloads">
+        <a class="download" href="./catwar-notepad.user.js">✧ Скачать юзерскрипт ✧</a>
+      </p>
+      <p class="note">Версия 0.4.11 · юзерскрипт для Tampermonkey</p>
+
+      <h2>Установка</h2>
+      <ol>
+        <li>Установите <a href="https://www.tampermonkey.net/" rel="noopener">Tampermonkey</a>.</li>
+        <li>Нажмите «Скачать юзерскрипт» — Tampermonkey предложит установку.</li>
+        <li>Откройте <code>catwar.su</code> или <code>catwar.net</code> — в правом нижнем углу появится кнопка 📓, нажмите на неё.</li>
+        <li>Готово — блокнот всегда будет рядом ✧</li>
+      </ol>
+    </div>
+
+    <div class="np-footer">
+      <span>📓 CatWar Notepad</span>
+      <span class="credit">by вп ✧</span>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var CHARS = ['✧', '✦', '⊹', '˖', '°', '·', '✩', '✯', '˳', '⋆'];
+      var COLORS = ['#ffd6ff', '#b388ff', '#ff7eb3', '#c4a3ff'];
+      var box = document.querySelector('.sparkles');
+      var count = Math.max(14, Math.min(30, Math.round(window.innerWidth / 55)));
+      for (var i = 0; i < count; i++) {
+        var s = document.createElement('span');
+        s.className = 'bg-sparkle';
+        s.textContent = CHARS[Math.floor(Math.random() * CHARS.length)];
+        s.style.left = (Math.random() * 100) + '%';
+        s.style.top = (Math.random() * 100) + '%';
+        s.style.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+        s.style.fontSize = (9 + Math.random() * 15) + 'px';
+        s.style.setProperty('--dx', (Math.random() * 120 - 60) + 'px');
+        s.style.setProperty('--dy', (-(50 + Math.random() * 160)) + 'px');
+        s.style.setProperty('--dur', (12 + Math.random() * 16) + 's');
+        s.style.setProperty('--delay', (-Math.random() * 24) + 's');
+        box.appendChild(s);
+      }
+    })();
+  </script>
 </body>
 </html>
