@@ -61,6 +61,22 @@
       .bg-sparkle { animation: none; opacity: .35; }
     }
 
+    /* ---------- cursor trail sparkles ---------- */
+    .trail-spk {
+      position: absolute;
+      line-height: 1;
+      user-select: none;
+      pointer-events: none;
+      text-shadow: 0 0 4px currentColor, 0 0 8px currentColor, 0 0 12px currentColor;
+      animation: trailSpk .9s ease-out forwards;
+      will-change: transform, opacity;
+    }
+    @keyframes trailSpk {
+      0%   { transform: translate(-50%, -50%) scale(.55) rotate(0deg); opacity: 0; }
+      15%  { opacity: 1; }
+      100% { transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, -26px))) scale(1.15) rotate(120deg); opacity: 0; }
+    }
+
     /* ---------- the page IS the notepad ---------- */
     .notepad {
       position: relative;
@@ -236,7 +252,7 @@
 
     <div class="np-content">
       <h1>CatWar: Notepad</h1>
-      <p class="desc">Сворачиваемый мини-блокнот с вкладками для <b>catwar.su</b> и <b>catwar.net</b>: заметки с переименованием, BB-код-редактор (жирный, курсив, ссылки, картинки, спойлеры, цитаты, списки, цвета), экспорт и импорт в JSON, настройка темы из 10 цветов, сворачивание, перетаскивание — и куча искряшек ✧</p>
+      <p class="desc">Сворачиваемый мини-блокнот с вкладками для catwar, BB-редактором, настройкой темы</p>
       <p class="downloads">
         <a class="download" href="./catwar-notepad.user.js">✧ Скачать юзерскрипт ✧</a>
       </p>
@@ -276,6 +292,30 @@
         s.style.setProperty('--dur', (12 + Math.random() * 16) + 's');
         s.style.setProperty('--delay', (-Math.random() * 24) + 's');
         box.appendChild(s);
+      }
+
+      // ---- sparkles follow the cursor ----
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        var lastX = -1, lastY = -1, lastT = 0;
+        document.addEventListener('pointermove', function (e) {
+          var now = performance.now();
+          if (now - lastT < 40) return;                     // throttle: max ~25/sec
+          var dx = e.clientX - lastX, dy = e.clientY - lastY;
+          if (lastX >= 0 && dx * dx + dy * dy < 144) return; // and only if moved >12px
+          lastX = e.clientX; lastY = e.clientY; lastT = now;
+          if (box.querySelectorAll('.trail-spk').length > 60) return;
+          var s = document.createElement('span');
+          s.className = 'trail-spk';
+          s.textContent = CHARS[Math.floor(Math.random() * CHARS.length)];
+          s.style.left = e.clientX + 'px';
+          s.style.top = e.clientY + 'px';
+          s.style.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+          s.style.fontSize = (8 + Math.random() * 8) + 'px';
+          s.style.setProperty('--dx', (Math.random() * 36 - 18) + 'px');
+          s.style.setProperty('--dy', (-(12 + Math.random() * 26)) + 'px');
+          s.addEventListener('animationend', function () { s.remove(); });
+          box.appendChild(s);
+        }, { passive: true });
       }
     })();
   </script>
