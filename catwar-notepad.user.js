@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CatWar: Notepad
 // @namespace    catwar-notepad
-// @version      1.0.0
+// @version      1.0.2
 // @description  Сворачиваемый мини-блокнот с вкладками
 // @author       кошечка
 // @match        *://catwar.su/*
@@ -175,7 +175,7 @@
       position: fixed;
       z-index: 2147483646;
       width: 360px;
-      max-height: 70vh;
+      height: 90vh;
       display: flex; flex-direction: column;
       background: var(--cw-bg);
       color: var(--cw-text);
@@ -270,7 +270,11 @@
       transition: background .15s ease, transform .12s ease;
     }
     .cw-np-tab-arrow:hover { background: rgba(255,255,255,0.16); transform: translateY(-1px); }
-    .cw-np-tab-arrow.hidden { display: none; }
+    .cw-np-tab-arrow.disabled {
+      opacity: 0.2;
+      cursor: default;
+      pointer-events: none;
+    }
 
     .cw-np-tab {
       display: inline-flex; align-items: center; gap: 4px;
@@ -598,8 +602,13 @@
       padding: 10px;
       background: rgba(0,0,0,0.25);
       border-bottom: 1px solid rgba(255,255,255,0.08);
-      grid-template: none;
+      max-height: 50vh;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--cw-accent2) transparent;
     }
+    .cw-np-settings::-webkit-scrollbar { width: 5px; }
+    .cw-np-settings::-webkit-scrollbar-thumb { background: var(--cw-accent2); border-radius: 3px; }
     .cw-np-settings.open { display: block; }
     .cw-np-set-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 15px; }
     .cw-np-set-row label { flex: 1; color: var(--cw-text); }
@@ -828,8 +837,8 @@
     if (!_tabStrip || !_tabArrowL || !_tabArrowR) return;
     const canL = _tabStrip.scrollLeft > 2;
     const canR = _tabStrip.scrollLeft + _tabStrip.clientWidth < _tabStrip.scrollWidth - 2;
-    _tabArrowL.classList.toggle('hidden', !canL);
-    _tabArrowR.classList.toggle('hidden', !canR);
+    _tabArrowL.classList.toggle('disabled', !canL);
+    _tabArrowR.classList.toggle('disabled', !canR);
   }
 
   function closeTabMenu() {
@@ -1382,6 +1391,11 @@
     activeEls.textarea = null;
     activeEls.bbbar = null;
 
+    // Preserve scroll position across re-renders so switching tabs
+    // animates FROM the old position instead of jumping to 0.
+    const oldStrip = body.querySelector('.cw-np-tab-strip');
+    const oldScroll = oldStrip ? oldStrip.scrollLeft : 0;
+
     body.innerHTML = '';
 
     // ----- Tab bar (sections in a single row, ◀ ▶ arrows page sideways) -----
@@ -1389,7 +1403,7 @@
     tabbar.className = 'cw-np-tabbar';
 
     const arrowL = document.createElement('div');
-    arrowL.className = 'cw-np-tab-arrow left hidden';
+    arrowL.className = 'cw-np-tab-arrow left disabled';
     arrowL.innerHTML = icon('chevron-left');
     tabbar.appendChild(arrowL);
 
@@ -1460,7 +1474,7 @@
 
     // ▶ arrow + strip wiring
     const arrowR = document.createElement('div');
-    arrowR.className = 'cw-np-tab-arrow right hidden';
+    arrowR.className = 'cw-np-tab-arrow right disabled';
     arrowR.innerHTML = icon('chevron-right');
     // rAF-driven ease-out animation — decelerates gently into the target
     // instead of the abrupt stop of the built-in smooth scroll.
@@ -1520,6 +1534,10 @@
     tabbar.appendChild(addTab);
 
     body.appendChild(tabbar);
+
+    // Restore scroll position from before the re-render so the animation
+    // starts from where the user was, not from 0.
+    strip.scrollLeft = oldScroll;
 
     // ----- Active section content (opens separately) -----
     if (!state.activeId) {
@@ -1690,19 +1708,32 @@
       }
     });
 
-    // After render: sync arrows first (their visibility changes the strip
-    // width), then bring the active tab into view (rect-based, layout-stable),
-    // then re-sync arrows in case the scroll flipped their state.
+    // After render: bring the active tab into view if it's clipped.
+    // Arrows are always visible (just dimmed when disabled), so the strip
+    // width is STABLE — no layout catch-22 with arrows appearing/disappearing.
     requestAnimationFrame(() => {
-      updateTabScroll();
       const activeTab = strip.querySelector('.cw-np-tab.active');
       if (activeTab) {
         const sr = strip.getBoundingClientRect();
         const ar = activeTab.getBoundingClientRect();
-        if (ar.left < sr.left - 1) strip.scrollLeft = Math.max(0, strip.scrollLeft + (ar.left - sr.left) - 6);
-        else if (ar.right > sr.right + 1) strip.scrollLeft = strip.scrollLeft + (ar.right - sr.right) + 6;
+        let target = strip.scrollLeft;
+        if (ar.right - ar.left >= sr.right - sr.left && (ar.left < sr.left - 1 || ar.right > sr.right + 1)) {
+          target = strip.scrollLeft + (ar.left - sr.left) - 6;
+        } else if (ar.left < sr.left - 1) {
+          target = strip.scrollLeft + (ar.left - sr.left) - 6;
+        } else if (ar.right > sr.right + 1) {
+          target = strip.scrollLeft + (ar.right - sr.right) + 6;
+        }
+        // Clamp to valid range (stable now — arrows don't change layout)
+        const maxScroll = Math.max(0, strip.scrollWidth - strip.clientWidth);
+        target = Math.max(0, Math.min(maxScroll, target));
+        if (Math.abs(target - strip.scrollLeft) > 1) {
+          animateStripTo(target);
+        }
       }
       updateTabScroll();
+      setTimeout(updateTabScroll, 350);
+      setTimeout(updateTabScroll, 650);
     });
   }
 
