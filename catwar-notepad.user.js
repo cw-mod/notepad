@@ -704,6 +704,7 @@
     'link': '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /> <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />',
     'clipboard': '<rect width="8" height="4" x="8" y="2" rx="1" ry="1" /> <path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2" />',
     'clipboard-check': '<path d="M11.5 16.5 14 19l5-5" /> <path d="M8 21h8a2 2 0 0 0 2-2V7l-2-2H6L4 7v12a2 2 0 0 0 2 2Z" /> <path d="M16 3v4" /> <path d="M8 3v4" />',
+    'arrow-down-narrow-wide': '<path d="m3 16 4 4 4-4" /> <path d="M7 20V4" /> <path d="M11 4h10" /> <path d="M11 8h7" /> <path d="M11 12h4" />',
   };
 
   // Render an icon: icon('lock', 14) -> inline svg markup
@@ -798,6 +799,7 @@
       </div>
       <button class="cw-np-btn cw-np-iconbtn" data-act="import" title="">${icon('folder-down', 16)}</button>
       <button class="cw-np-btn cw-np-iconbtn" data-act="export" title="">${icon('folder-up', 16)}</button>
+      <button class="cw-np-btn cw-np-iconbtn" data-act="sortTabs" title="">${icon('arrow-down-narrow-wide', 16)}</button>
       <button class="cw-np-btn cw-np-iconbtn danger" data-act="clearAll" title="Удалить все вкладки">${icon('trash-2', 16)}</button>
     </div>
   `;
@@ -1350,6 +1352,16 @@
     return 'Заметки ' + n;
   }
 
+  // Natural sort: "блоги" < "блоги 1" < "блоги 2" < "блоги 10" (numeric,
+  // not lexicographic). Same prefix → no-number comes first; numbers
+  // compared as integers. Case-insensitive (З == з). Uses the platform's
+  // locale-aware collator with the `numeric` flag.
+  function tabCompare(a, b) {
+    const at = (a && a.title) || '';
+    const bt = (b && b.title) || '';
+    return at.localeCompare(bt, undefined, { numeric: true, sensitivity: 'base' });
+  }
+
   const activeEls = { sec: null, content: null, textarea: null, bbbar: null };
   let footerEditBtn, footerSaveBtn;
 
@@ -1617,7 +1629,22 @@
           case 'hr':     insertAtCursor('\n[hr]\n'); break;
           case 'list':   wrapSelection('[list]\n[*]', '\n[/list]', 'пункт'); break;
           case 'img':    wrapSelection('[img]', '[/img]', 'https://'); break;
-          case 'url':    wrapSelection('[url=https://]', '[/url]', 'текст ссылки'); break;
+          case 'url': {
+            // Insert [url=]label[/url] (no preset https://) and place the
+            // caret between `=` and `]` so the user can paste the URL right away.
+            const s = textarea.selectionStart;
+            const e = textarea.selectionEnd;
+            const before = textarea.value.slice(0, s);
+            const sel = textarea.value.slice(s, e) || 'текст ссылки';
+            const after = textarea.value.slice(e);
+            const insert = `[url=]${sel}[/url]`;
+            textarea.value = before + insert + after;
+            // `[url=` is 5 chars → caret at offset 5 sits between `=` and `]`.
+            textarea.setSelectionRange(s + 5, s + 5);
+            textarea.focus();
+            spawnSparkleBurst(textarea.getBoundingClientRect().left + 100, textarea.getBoundingClientRect().top + 12, 4);
+            break;
+          }
           case 'spoiler':wrapSelection('[spoiler=Спойлер]', '[/spoiler]', 'скрытый текст'); break;
           case 'quote':  wrapSelection('[quote]', '[/quote]', 'цитируемый текст'); break;
           case 'code':   wrapSelection('[code]', '[/code]', 'код'); break;
@@ -1860,6 +1887,17 @@
 
   panel.querySelector('.cw-np-footer [data-act="export"]').addEventListener('click', exportData);
   panel.querySelector('.cw-np-footer [data-act="import"]').addEventListener('click', () => fileInput.click());
+  panel.querySelector('.cw-np-footer [data-act="sortTabs"]').addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (state.sections.length < 2) {
+      spawnSparkleBurst(e.clientX, e.clientY, 4);
+      return;
+    }
+    state.sections.sort(tabCompare);
+    store.set('sections', state.sections);
+    renderSections();
+    spawnSparkleBurst(e.clientX, e.clientY, 8);
+  });
   panel.querySelector('.cw-np-footer [data-act="clearAll"]').addEventListener('click', (e) => {
     spawnSparkleBurst(e.clientX, e.clientY, 6);
     if (!confirm('Удалить все вкладки вместе с содержимым? Это действие нельзя отменить.')) return;
