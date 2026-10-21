@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CatWar: Notepad</title>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: #f0e9ff;
+      background: #1c1624;
+    }
+    main {
+      max-width: 40rem;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 1.6rem;
+      line-height: 1.25;
+    }
+    h2 {
+      margin: 28px 0 10px;
+      font-size: 1.15rem;
+    }
+    p {
+      margin: 0 0 12px;
+    }
+    .downloads {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 8px 0 8px;
+    }
+    .download {
+      display: inline-block;
+      padding: 12px 18px;
+      font-weight: 700;
+      color: #1c1624;
+      text-decoration: none;
+      background: #b388ff;
+      border-radius: 8px;
+    }
+    .download:hover {
+      background: #ffd6ff;
+    }
+    .note {
+      font-size: 0.92rem;
+      opacity: 0.88;
+    }
+    ol, ul {
+      margin: 0 0 12px;
+      padding-left: 1.2em;
+    }
+    li {
+      margin-bottom: 6px;
+    }
+    code {
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>CatWar: Notepad 📓</h1>
+    <p>Сворачиваемый мини-блокнот с вкладками для <strong>catwar.su</strong> и <strong>catwar.net</strong>: заметки, BB-код-редактор, экспорт и импорт, настройка цветов, перетаскивание и куча искряшек ✨.</p>
+    <p class="downloads">
+      <a class="download" href="./catwar-notepad.user.js">Скачать юзерскрипт</a>
+    </p>
+    <p class="note">Версия 1.4.7. Юзерскрипт для Tampermonkey. Автообновление: <a href="./catwar-notepad.meta.js">catwar-notepad.meta.js</a>.</p>
+
+    <h2>Установка</h2>
+    <ol>
+      <li>Установите <a href="https://www.tampermonkey.net/" rel="noopener">Tampermonkey</a>.</li>
+      <li>Нажмите «Скачать юзерскрипт» — Tampermonkey предложит установку.</li>
+      <li>Откройте <code>https://catwar.su</code> или <code>https://catwar.net</code> — блокнот уже там: тяните за кнопку 📓.</li>
+      <li>После установки скрипт сам обновляется с этой же страницы GitHub Pages.</li>
+    </ol>
+
+    <h2>Возможности</h2>
+    <ul>
+      <li>Вкладки-заметки: добавление, переименование, удаление, меню переполнения ➤.</li>
+      <li>BB-код: жирный, курсив, ссылки, картинки, цвет, размер, спойлеры, цитаты, списки.</li>
+      <li>Экспорт и импорт заметок в JSON.</li>
+      <li>Настройка темы из 10 цветов, сворачивание, фиксация позиции, перетаскивание.</li>
+    </ul>
+  </main>
+</body>
+</html>
