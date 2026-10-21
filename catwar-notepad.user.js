@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CatWar: Notepad
 // @namespace    catwar-notepad
-// @version      1.4.8
+// @version      1.4.9
 // @description  Сворачиваемый мини-блокнот с вкладками
 // @author       вп
 // @match        *://catwar.su/*
@@ -58,7 +58,7 @@
       }
     ],
     panelPos: { x: 60, y: 80 },
-    fabPos: { x: 20, y: 20 },
+    fabPos: null, // null = fresh install → bottom-right corner (computed on first run)
     locked: false,
     collapsed: false,
     colors: {
@@ -202,6 +202,7 @@
     .cw-np-btn.danger { background: rgba(231,76,60,0.18); border-color: rgba(231,76,60,0.4); }
     .cw-np-btn.danger:hover { background: rgba(231,76,60,0.35); }
     .cw-np-btn.active { background: var(--cw-accent2); color: #fff; border-color: transparent; }
+    .cw-np-btn.open { background: var(--cw-accent2); color: #fff; border-color: transparent; }
 
     /* ---------- BODY ---------- */
     .cw-np-body {
@@ -459,28 +460,12 @@
       transform: translateY(-1px) rotate(90deg);
     }
 
-    /* ➤ overflow button (opens side list of all tabs) */
-    .cw-np-tab-overflow {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 26px; height: 24px;
-      font-size: 14px; line-height: 1;
-      color: var(--cw-text);
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 7px;
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: background .15s ease, transform .12s ease;
-      user-select: none;
-    }
-    .cw-np-tab-overflow:hover { background: rgba(255,255,255,0.16); transform: translateY(-1px); }
-    .cw-np-tab-overflow.open { background: var(--cw-accent2); color: #fff; border-color: transparent; }
-
-    /* Side dropdown menu — list of all tabs */
+    /* Side dropdown menu — list of all tabs (fully opaque by default) */
     .cw-np-tab-menu {
       position: fixed;
       z-index: 2147483647;
-      background: var(--cw-bg);
+      background-image: linear-gradient(var(--cw-bg), var(--cw-bg));
+      background-color: #1c1624;
       border: 1px solid var(--cw-border);
       border-radius: 10px;
       padding: 5px;
@@ -489,7 +474,6 @@
       min-width: 170px;
       max-width: 240px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-      backdrop-filter: blur(8px);
       display: none;
       scrollbar-width: thin;
       scrollbar-color: var(--cw-accent2) transparent;
@@ -627,6 +611,7 @@
       <div class="cw-np-title"><span class="dot"></span><span>Мини-блокнот</span></div>
       <button class="cw-np-btn" data-act="lock" title="">🔒</button>
       <button class="cw-np-btn" data-act="settings" title="">⚙</button>
+      <button class="cw-np-btn" data-act="tabs" title="">➤</button>
       <button class="cw-np-btn" data-act="collapse" title="">—</button>
     </div>
     <div class="cw-np-settings" data-el="settings">
@@ -724,12 +709,9 @@
 
   function updateOverflowTabs() {
     // Multi-row tab bar: all tabs are always visible (flex-wrap: wrap).
-    // The ➤ button stays as a quick "all tabs" dropdown menu.
     const tabbar = body.querySelector('.cw-np-tabbar');
     if (!tabbar) { _overflowSecs = []; return; }
     tabbar.querySelectorAll('.cw-np-tab').forEach(t => { t.style.display = ''; });
-    const overflowBtn = tabbar.querySelector('.cw-np-tab-overflow');
-    if (overflowBtn) overflowBtn.style.display = '';
     _overflowSecs = [];
   }
 
@@ -790,7 +772,7 @@
           renderSections();
           // Close the menu if nothing left to show, otherwise refresh its contents.
           if (state.sections.length === 0) closeTabMenu();
-          else openTabMenu(triggerEl);
+          else { closeTabMenu(); openTabMenu(triggerEl); }
         }
       });
       item.appendChild(close);
@@ -874,6 +856,11 @@
    *  POSITIONING
    * ============================================================ */
   function applyPositions() {
+    if (!state.fabPos || typeof state.fabPos.x !== 'number') {
+      // Fresh install: anchor the FAB to the bottom-right corner.
+      state.fabPos = clampPos(fab, window.innerWidth - fab.offsetWidth - 20, window.innerHeight - fab.offsetHeight - 20);
+      store.set('fabPos', state.fabPos);
+    }
     fab.style.left = state.fabPos.x + 'px';
     fab.style.top = state.fabPos.y + 'px';
     panel.style.left = state.panelPos.x + 'px';
@@ -1297,17 +1284,6 @@
     });
     tabbar.appendChild(addTab);
 
-    // ➤ overflow button — opens side list of all tabs (saves scrolling when many tabs)
-    const overflowBtn = document.createElement('div');
-    overflowBtn.className = 'cw-np-tab-overflow';
-    overflowBtn.textContent = '➤';
-    overflowBtn.title = '';
-    overflowBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openTabMenu(overflowBtn);
-    });
-    tabbar.appendChild(overflowBtn);
-
     body.appendChild(tabbar);
 
     // ----- Active section content (opens separately) -----
@@ -1593,6 +1569,13 @@
   lockBtn.addEventListener('click', toggleLock);
   collapseBtn.addEventListener('click', toggleCollapse);
   panel.querySelector('[data-act="settings"]').addEventListener('click', toggleSettings);
+
+  // ➤ header button — dropdown with all tabs
+  const tabsMenuBtn = panel.querySelector('[data-act="tabs"]');
+  tabsMenuBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openTabMenu(tabsMenuBtn);
+  });
 
   footerEditBtn = panel.querySelector('.cw-np-footer [data-act="edit"]');
   footerSaveBtn = panel.querySelector('.cw-np-footer [data-act="save"]');
