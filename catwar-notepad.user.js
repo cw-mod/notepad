@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CatWar: Notepad
 // @namespace    catwar-notepad
-// @version      1.4.10
+// @version      1.4.11
 // @description  Сворачиваемый мини-блокнот с вкладками
 // @author       вп
 // @match        *://catwar.su/*
@@ -464,6 +464,7 @@
     .cw-np-tab-menu {
       position: fixed;
       z-index: 2147483647;
+      pointer-events: auto;
       background-image: linear-gradient(var(--cw-bg), var(--cw-bg));
       background-color: #1c1624;
       border: 1px solid var(--cw-border);
