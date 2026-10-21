@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CatWar: Notepad
 // @namespace    catwar-notepad
-// @version      0.4.13
+// @version      0.4.14
 // @description  Сворачиваемый мини-блокнот с вкладками
 // @author       вп
 // @match        *://catwar.su/*
@@ -1316,7 +1316,13 @@
     arrowR.className = 'cw-np-tab-arrow right hidden';
     arrowR.textContent = '▶';
     function scrollStripBy(delta) {
-      strip.scrollTo({ left: strip.scrollLeft + delta, behavior: 'smooth' });
+      // Accumulate rapid clicks into one target so fast paging doesn't undershoot
+      // (each smooth scrollTo retargets from the current position otherwise).
+      let target = strip._cwScrollTarget;
+      if (target == null || Math.abs(target - strip.scrollLeft) > 4) target = strip.scrollLeft;
+      target = Math.max(0, Math.min(strip.scrollWidth - strip.clientWidth, target + delta));
+      strip._cwScrollTarget = target;
+      strip.scrollTo({ left: target, behavior: 'smooth' });
     }
     arrowL.addEventListener('click', (e) => {
       e.stopPropagation();
