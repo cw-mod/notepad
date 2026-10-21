@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CatWar: Notepad
 // @namespace    catwar-notepad
-// @version      0.4.15
+// @version      0.4.16
 // @description  Сворачиваемый мини-блокнот с вкладками
 // @author       вп
 // @match        *://catwar.su/*
@@ -230,6 +230,7 @@
       flex: 1;
       min-width: 0;
       overflow: hidden;
+      padding: 0 5px;
     }
     .cw-np-tab-arrow {
       display: inline-flex; align-items: center; justify-content: center;
@@ -1315,6 +1316,24 @@
     const arrowR = document.createElement('div');
     arrowR.className = 'cw-np-tab-arrow right hidden';
     arrowR.textContent = '▶';
+    // rAF-driven ease-out animation — decelerates gently into the target
+    // instead of the abrupt stop of the built-in smooth scroll.
+    function animateStripTo(target) {
+      if (strip._cwScrollRAF) { cancelAnimationFrame(strip._cwScrollRAF); strip._cwScrollRAF = null; }
+      const start = strip.scrollLeft;
+      const dist = target - start;
+      if (Math.abs(dist) < 1) return;
+      const dur = Math.max(220, Math.min(560, 140 + Math.abs(dist) * 0.5));
+      const t0 = performance.now();
+      const ease = t => 1 - Math.pow(1 - t, 3);
+      const step = now => {
+        const t = Math.min(1, (now - t0) / dur);
+        strip.scrollLeft = start + dist * ease(t);
+        if (t < 1) strip._cwScrollRAF = requestAnimationFrame(step);
+        else strip._cwScrollRAF = null;
+      };
+      strip._cwScrollRAF = requestAnimationFrame(step);
+    }
     function scrollStripBy(delta) {
       // Accumulate rapid clicks into one target so fast paging doesn't undershoot.
       // A gesture stays "alive" for 500ms — clicks inside it extend the target.
@@ -1328,7 +1347,7 @@
       target = Math.max(0, Math.min(strip.scrollWidth - strip.clientWidth, target + delta));
       strip._cwScrollTarget = target;
       strip._cwScrollAt = now;
-      strip.scrollTo({ left: target, behavior: 'smooth' });
+      animateStripTo(target);
     }
     arrowL.addEventListener('click', (e) => {
       e.stopPropagation();
