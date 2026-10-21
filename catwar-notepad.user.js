@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CatWar: Notepad
 // @namespace    catwar-notepad
-// @version      0.4.19
+// @version      0.4.20
 // @description  Сворачиваемый мини-блокнот с вкладками
 // @author       вп
 // @match        *://catwar.su/*
@@ -62,8 +62,8 @@
     locked: false,
     collapsed: false,
     colors: {
-      bg:       '#1c1624f0',
-      bgInput:  '#00000047',
+      bg:       '#2e2249f0',
+      bgInput:  '#b388ff1a',
       text:     '#f0e9ff',
       link:     '#c4a3ff',
       border:   '#7a5cc5',
@@ -85,6 +85,19 @@
     settingsOpen: false,
     sparkleTimer: null
   };
+
+  // Migrate: if the user never customized colors but has the OLD (too dark,
+  // near-black) defaults persisted, silently upgrade to the new palette.
+  (function migrateOldDefaultColors() {
+    const OLD = { bg: '#1c1624f0', bgInput: '#00000047', text: '#f0e9ff', link: '#c4a3ff',
+                  border: '#7a5cc5', header: '#3a2658f5', accent: '#b388ff', accent2: '#ff7eb3', sparkle: '#ffd6ff' };
+    const cur = state.colors || {};
+    const same = Object.keys(OLD).every(k => cur[k] === OLD[k]);
+    if (same) {
+      state.colors = Object.assign({}, DEFAULTS.colors);
+      store.set('colors', state.colors);
+    }
+  })();
 
   // ensure at least one section
   if (!Array.isArray(state.sections) || state.sections.length === 0) {
