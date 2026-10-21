@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CatWar: Notepad
 // @namespace    catwar-notepad
-// @version      1.4.7
+// @version      1.4.8
 // @description  Сворачиваемый мини-блокнот с вкладками
 // @author       вп
 // @match        *://catwar.su/*
@@ -215,8 +215,9 @@
     /* ---------- TAB BAR (sections in a row) ---------- */
     .cw-np-tabbar {
       display: flex;
-      flex-wrap: nowrap;
-      overflow: hidden;
+      flex-wrap: wrap;
+      overflow-y: auto;
+      max-height: 132px;
       gap: 4px;
       padding: 6px 6px 4px 6px;
       background: rgba(0,0,0,0.22);
@@ -722,59 +723,14 @@
   let _overflowSecs = [];
 
   function updateOverflowTabs() {
+    // Multi-row tab bar: all tabs are always visible (flex-wrap: wrap).
+    // The ➤ button stays as a quick "all tabs" dropdown menu.
     const tabbar = body.querySelector('.cw-np-tabbar');
-    if (!tabbar || state.collapsed) { _overflowSecs = []; return; }
-    const tabEls = Array.from(tabbar.querySelectorAll('.cw-np-tab'));
-    const addBtn = tabbar.querySelector('.cw-np-tab-add');
+    if (!tabbar) { _overflowSecs = []; return; }
+    tabbar.querySelectorAll('.cw-np-tab').forEach(t => { t.style.display = ''; });
     const overflowBtn = tabbar.querySelector('.cw-np-tab-overflow');
-    if (!tabEls.length || !addBtn || !overflowBtn) { _overflowSecs = []; return; }
-
-    // Show all tabs so we can measure their natural widths
-    tabEls.forEach(t => { t.style.display = ''; });
-    overflowBtn.style.display = '';
-    void tabbar.offsetWidth; // force reflow
-
-    const gap = 4;
-    const addW = addBtn.offsetWidth + gap;
-    const overflowW = overflowBtn.offsetWidth + gap;
-    const available = tabbar.clientWidth - addW - overflowW;
-
-    let totalTabsW = 0;
-    tabEls.forEach(t => { totalTabsW += t.offsetWidth + gap; });
-
-    if (totalTabsW <= available) {
-      // Everything fits — no overflow, hide ➤
-      overflowBtn.style.display = 'none';
-      _overflowSecs = [];
-      return;
-    }
-
-    // Some tabs overflow. Determine which fit (in order).
-    const visibleIndices = new Set();
-    let used = 0;
-    for (let i = 0; i < tabEls.length; i++) {
-      const w = tabEls[i].offsetWidth + gap;
-      if (used + w > available) break;
-      used += w;
-      visibleIndices.add(i);
-    }
-
-    // Ensure the active tab stays visible even if it would overflow
-    const activeIdx = tabEls.findIndex(t => t.classList.contains('active'));
-    if (activeIdx >= 0 && !visibleIndices.has(activeIdx)) {
-      visibleIndices.add(activeIdx);
-    }
-
+    if (overflowBtn) overflowBtn.style.display = '';
     _overflowSecs = [];
-    tabEls.forEach((t, i) => {
-      if (visibleIndices.has(i)) {
-        t.style.display = '';
-      } else {
-        t.style.display = 'none';
-        const sec = state.sections.find(s => s.id === t.dataset.id);
-        if (sec) _overflowSecs.push(sec);
-      }
-    });
   }
 
   function closeTabMenu() {
@@ -833,7 +789,7 @@
           store.set('activeId', state.activeId);
           renderSections();
           // Close the menu if nothing left to show, otherwise refresh its contents.
-          if (state.sections.length === 0 || _overflowSecs.length === 0) closeTabMenu();
+          if (state.sections.length === 0) closeTabMenu();
           else openTabMenu(triggerEl);
         }
       });
