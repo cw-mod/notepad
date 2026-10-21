@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CatWar: Notepad
 // @namespace    catwar-notepad
-// @version      1.0.0
+// @version      1.0.2
 // @description  Сворачиваемый мини-блокнот с вкладками
 // @author       кошечка
 // @match        *://catwar.su/*
@@ -360,7 +360,14 @@
       display: none;
     }
     .cw-np-sec-textarea.editing { display: block; }
-    .cw-np-sec-textarea:focus { outline: none; }
+    .cw-np-sec-textarea:focus,
+    .cw-np-sec-textarea:hover,
+    .cw-np-sec-content:focus,
+    .cw-np-sec-content:hover {
+      outline: none;
+      border: none;
+      box-shadow: none;
+    }
 
     /* ---------- BB-CODE TOOLBAR (above textarea) ---------- */
     .cw-np-bbbar {
