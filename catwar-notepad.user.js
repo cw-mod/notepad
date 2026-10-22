@@ -1863,6 +1863,28 @@
     store.set('pathStates', _pathStates);
     applyCollapsed();
     if (!state.collapsed) {
+      // Panel just expanded — if it was collapsed on load, the initial
+      // auto-scroll rAF ran with 0-width rects (display:none). Re-run it now.
+      requestAnimationFrame(() => {
+        const strip = _tabStrip;
+        if (!strip) return;
+        const activeTab = strip.querySelector('.cw-np-tab.active');
+        if (!activeTab) return;
+        const sr = strip.getBoundingClientRect();
+        const ar = activeTab.getBoundingClientRect();
+        let target = strip.scrollLeft;
+        if (ar.left < sr.left - 1) {
+          target = strip.scrollLeft + (ar.left - sr.left) - 6;
+        } else if (ar.right > sr.right + 1) {
+          target = strip.scrollLeft + (ar.right - sr.right) + 6;
+        }
+        const maxScroll = Math.max(0, strip.scrollWidth - strip.clientWidth);
+        target = Math.max(0, Math.min(maxScroll, target));
+        if (Math.abs(target - strip.scrollLeft) > 1) {
+          strip.scrollLeft = target;
+          updateTabScroll();
+        }
+      });
       const rect = panel.getBoundingClientRect();
       spawnSparkleBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, 16);
     }
