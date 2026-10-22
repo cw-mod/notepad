@@ -743,7 +743,7 @@
 
   // Panel
   const panel = document.createElement('div');
-  panel.className = 'cw-np-panel';
+  panel.className = 'cw-np-panel' + (state.collapsed ? ' collapsed' : '');
   panel.innerHTML = `
     <div class="cw-np-header" data-drag="panel">
       <div class="cw-np-title"><span class="dot"></span><span>Мини-блокнот</span></div>
