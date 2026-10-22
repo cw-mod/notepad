@@ -81,12 +81,6 @@
   // the user on pages where they haven't explicitly opened it.
   const _pathStates = store.get('pathStates', {});
   const _currentPath = location.pathname;
-  // Migrate old global collapsed state to the current path (one-time).
-  const _oldCollapsed = store.get('collapsed', null);
-  if (_oldCollapsed !== null && !(_currentPath in _pathStates)) {
-    _pathStates[_currentPath] = _oldCollapsed;
-    store.set('pathStates', _pathStates);
-  }
 
   const state = {
     sections:  store.get('sections', DEFAULTS.sections) || [],
