@@ -75,12 +75,25 @@
     fontSize: 15
   };
 
+  // Per-path collapsed state — the notepad remembers whether it should be
+  // expanded or collapsed on each specific page (URL path).
+  // Default for unrecognised paths: collapsed (true) — so it doesn't bother
+  // the user on pages where they haven't explicitly opened it.
+  const _pathStates = store.get('pathStates', {});
+  const _currentPath = location.pathname;
+  // Migrate old global collapsed state to the current path (one-time).
+  const _oldCollapsed = store.get('collapsed', null);
+  if (_oldCollapsed !== null && !(_currentPath in _pathStates)) {
+    _pathStates[_currentPath] = _oldCollapsed;
+    store.set('pathStates', _pathStates);
+  }
+
   const state = {
     sections:  store.get('sections', DEFAULTS.sections) || [],
     panelPos:  store.get('panelPos', DEFAULTS.panelPos),
     fabPos:    store.get('fabPos',   DEFAULTS.fabPos),
     locked:    store.get('locked',   DEFAULTS.locked),
-    collapsed: store.get('collapsed', DEFAULTS.collapsed),
+    collapsed: _currentPath in _pathStates ? _pathStates[_currentPath] : true,
     colors:    Object.assign({}, DEFAULTS.colors, store.get('colors', {})),
     sparklesEnabled: store.get('sparklesEnabled', true),
     fontSize: store.get('fontSize', DEFAULTS.fontSize),
@@ -1852,7 +1865,8 @@
 
   function toggleCollapse() {
     state.collapsed = !state.collapsed;
-    store.set('collapsed', state.collapsed);
+    _pathStates[_currentPath] = state.collapsed;
+    store.set('pathStates', _pathStates);
     applyCollapsed();
     if (!state.collapsed) {
       const rect = panel.getBoundingClientRect();
