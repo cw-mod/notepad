@@ -2018,7 +2018,7 @@
     footerEditBtn.style.display = '';
     footerSaveBtn.style.display = 'none';
     store.set('sections', state.sections);
-    const r = footerSaveBtn.getBoundingClientRect();
+    const r = footerEditBtn.getBoundingClientRect();
     spawnSparkleBurst(r.left + 12, r.top + 12, 8);
   });
 
