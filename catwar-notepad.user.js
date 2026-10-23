@@ -86,6 +86,8 @@
     sections:  store.get('sections', DEFAULTS.sections) || [],
     panelPos:  store.get('panelPos', DEFAULTS.panelPos),
     fabPos:    store.get('fabPos',   DEFAULTS.fabPos),
+    fabRight:  store.get('fabRight',  null),
+    fabBottom: store.get('fabBottom', null),
     locked:    store.get('locked',   DEFAULTS.locked),
     collapsed: _currentPath in _pathStates ? _pathStates[_currentPath] : true,
     colors:    Object.assign({}, DEFAULTS.colors, store.get('colors', {})),
