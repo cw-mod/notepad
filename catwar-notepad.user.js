@@ -1209,17 +1209,21 @@
   const SPARKLE_CHARS = ['✧', '✦', '⊹', '˖', '°', '·', '࣪', '✩', '✯', '˳', '⋆'];
 
   function makeSparkle(x, y, size, dx, dy, duration) {
-    // TEST: bright red div, no animation, stays 5s — should be 100% visible
-    const sp = document.createElement('div');
-    sp.style.cssText = `position:fixed !important; left:${x}px; top:${y}px; width:20px; height:20px; background:red; z-index:2147483647 !important; opacity:1 !important; pointer-events:none;`;
+    const sp = document.createElement('span');
+    sp.className = 'cw-np-sparkle';
+    sp.textContent = SPARKLE_CHARS[Math.floor(Math.random() * SPARKLE_CHARS.length)];
+    sp.style.fontSize = size + 'px';
+    sp.style.left = (x - size / 2) + 'px';
+    sp.style.top = (y - size / 2) + 'px';
+    sp.style.setProperty('--dx', dx + 'px');
+    sp.style.setProperty('--dy', dy + 'px');
+    sp.style.animation = `cwSpkFloat ${duration}s ease-out forwards`;
     document.documentElement.appendChild(sp);
-    console.log('[CatWar Notepad] TEST sparkle at', x, y, 'in DOM:', sp.isConnected, 'parent:', sp.parentElement?.tagName);
-    setTimeout(() => sp.remove(), 5000);
+    setTimeout(() => sp.remove(), duration * 1000 + 300);
   }
 
   function spawnSparkleBurst(x, y, count) {
     if (!state.sparklesEnabled) return;
-    console.log('[CatWar Notepad] spawnSparkleBurst at', x, y, 'count', count);
     for (let i = 0; i < count; i++) {
       const size = 12 + Math.random() * 12;       // 12–24px font
       const angle = Math.random() * Math.PI * 2;
@@ -1946,8 +1950,8 @@
           updateTabScroll();
         }
       });
-      const rect = panel.getBoundingClientRect();
-      spawnSparkleBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, 16);
+      const fr = fab.getBoundingClientRect();
+      spawnSparkleBurst(fr.left + fr.width / 2, fr.top + fr.height / 2, 16);
     }
   }
 
@@ -1956,11 +1960,7 @@
    * ============================================================ */
   // FAB click toggles panel
   fab.addEventListener('click', (e) => {
-    console.log('[CatWar Notepad] FAB click fired, detail:', e.detail, 'dragged:', fab._cwWasDragged, 'collapsed:', state.collapsed, 'sparkles:', state.sparklesEnabled);
     if (e.detail === 0) return;
-    // If the FAB was actually dragged (not just clicked), suppress the
-    // synthetic click that fires after mouseup — otherwise dragging the
-    // FAB would also collapse/expand the panel.
     if (fab._cwWasDragged) {
       fab._cwWasDragged = false;
       return;
@@ -1968,8 +1968,8 @@
     e.stopPropagation();
     toggleCollapse();
     if (!state.collapsed) {
-      const rect = panel.getBoundingClientRect();
-      spawnSparkleBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, 12);
+      const fr = fab.getBoundingClientRect();
+      spawnSparkleBurst(fr.left + fr.width / 2, fr.top + fr.height / 2, 12);
     }
   });
 
