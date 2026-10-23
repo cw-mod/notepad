@@ -1083,6 +1083,7 @@
    * ============================================================ */
   function makeDraggable(handle, target, kind) {
     let startX, startY, origX, origY, dragging = false;
+    let dragStarted = false;
     let totalDistance = 0;
 
     function onDown(e) {
@@ -1090,14 +1091,15 @@
       if (e.target.closest('.cw-np-btn')) return;
 
       dragging = true;
+      dragStarted = false;
       totalDistance = 0;
       const p = e.touches ? e.touches[0] : e;
       startX = p.clientX;
       startY = p.clientY;
+      // Read the preferred position but DON'T switch CSS yet — wait until
+      // the mouse actually moves past the threshold (5px). This prevents
+      // a visual "twitch" on pure clicks (right/bottom → left/top → right/bottom).
       if (kind === 'fab') {
-        // FAB uses right/bottom — convert to left/top for drag math.
-        // Read from inline style (NOT getBoundingClientRect) to avoid the
-        // :hover scale(1.08) drift — the rect shifts ~2px on hover.
         const r = parseFloat(target.style.right);
         const b = parseFloat(target.style.bottom);
         if (!isNaN(r) && !isNaN(b)) {
@@ -1107,17 +1109,12 @@
           origX = window.innerWidth - 20 - target.offsetWidth;
           origY = window.innerHeight - 20 - target.offsetHeight;
         }
-        target.style.right = 'auto';
-        target.style.bottom = 'auto';
-        target.style.left = origX + 'px';
-        target.style.top = origY + 'px';
       } else {
         origX = parseFloat(target.style.left);
         origY = parseFloat(target.style.top);
         if (isNaN(origX)) origX = 0;
         if (isNaN(origY)) origY = 0;
       }
-      target.style.transition = 'none';
       e.preventDefault();
       document.addEventListener('mousemove', onMove);
       document.addEventListener('mouseup', onUp);
@@ -1125,7 +1122,6 @@
       document.addEventListener('touchend', onUp);
       document.addEventListener('touchcancel', onUp);
       window.addEventListener('blur', onUp);
-      spawnSparkleBurst(p.clientX, p.clientY, 4);
     }
 
     function onMove(e) {
@@ -1134,6 +1130,20 @@
       const dx = p.clientX - startX;
       const dy = p.clientY - startY;
       totalDistance = Math.max(totalDistance, Math.sqrt(dx * dx + dy * dy));
+      // Only switch to drag mode after movement exceeds threshold
+      if (!dragStarted && totalDistance > 5) {
+        dragStarted = true;
+        target.style.transition = 'none';
+        if (kind === 'fab') {
+          // Now switch FAB from right/bottom to left/top for dragging
+          target.style.right = 'auto';
+          target.style.bottom = 'auto';
+          target.style.left = origX + 'px';
+          target.style.top = origY + 'px';
+        }
+        spawnSparkleBurst(p.clientX, p.clientY, 4);
+      }
+      if (!dragStarted) return;
       const newPos = clampPos(target, origX + dx, origY + dy);
       target.style.left = newPos.x + 'px';
       target.style.top = newPos.y + 'px';
@@ -1144,41 +1154,38 @@
     function onUp() {
       if (!dragging) return;
       dragging = false;
-      target.style.transition = '';
-      if (kind === 'fab') {
-        // FAB uses right/bottom — convert final left/top back to right/bottom.
-        const left = parseFloat(target.style.left);
-        const top = parseFloat(target.style.top);
-        if (!isNaN(left) && !isNaN(top)) {
-          const r = window.innerWidth - left - target.offsetWidth;
-          const b = window.innerHeight - top - target.offsetHeight;
-          state.fabRight = Math.max(2, r);
-          state.fabBottom = Math.max(2, b);
-          store.set('fabRight', state.fabRight);
-          store.set('fabBottom', state.fabBottom);
-          // Switch back to right/bottom CSS
-          target.style.left = 'auto';
-          target.style.top = 'auto';
-          const rMax = Math.max(2, window.innerWidth - target.offsetWidth - 4);
-          const bMax = Math.max(2, window.innerHeight - target.offsetHeight - 4);
-          target.style.right = Math.max(2, Math.min(state.fabRight, rMax)) + 'px';
-          target.style.bottom = Math.max(2, Math.min(state.fabBottom, bMax)) + 'px';
-        }
-      } else {
-        // Panel uses left/top.
-        const left = parseFloat(target.style.left);
-        const top = parseFloat(target.style.top);
-        if (!isNaN(left) && !isNaN(top)) {
-          const pos = clampPos(target, left, top);
-          target.style.left = pos.x + 'px';
-          target.style.top = pos.y + 'px';
-          state.panelPos = pos;
-          store.set('panelPos', pos);
+      if (dragStarted) {
+        target.style.transition = '';
+        if (kind === 'fab') {
+          const left = parseFloat(target.style.left);
+          const top = parseFloat(target.style.top);
+          if (!isNaN(left) && !isNaN(top)) {
+            const r = window.innerWidth - left - target.offsetWidth;
+            const b = window.innerHeight - top - target.offsetHeight;
+            state.fabRight = Math.max(2, r);
+            state.fabBottom = Math.max(2, b);
+            store.set('fabRight', state.fabRight);
+            store.set('fabBottom', state.fabBottom);
+            target.style.left = 'auto';
+            target.style.top = 'auto';
+            const rMax = Math.max(2, window.innerWidth - target.offsetWidth - 4);
+            const bMax = Math.max(2, window.innerHeight - target.offsetHeight - 4);
+            target.style.right = Math.max(2, Math.min(state.fabRight, rMax)) + 'px';
+            target.style.bottom = Math.max(2, Math.min(state.fabBottom, bMax)) + 'px';
+          }
+        } else {
+          const left = parseFloat(target.style.left);
+          const top = parseFloat(target.style.top);
+          if (!isNaN(left) && !isNaN(top)) {
+            const pos = clampPos(target, left, top);
+            target.style.left = pos.x + 'px';
+            target.style.top = pos.y + 'px';
+            state.panelPos = pos;
+            store.set('panelPos', pos);
+          }
         }
       }
-      // Mark whether this was a real drag (vs a tap/click) so click handlers
-      // can suppress the synthetic click that fires after mouseup.
-      target._cwWasDragged = totalDistance > 5;
+      target._cwWasDragged = dragStarted;
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       document.removeEventListener('touchmove', onMove);
