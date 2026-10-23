@@ -678,16 +678,13 @@
 
     /* ---------- SPARKLES (Unicode text-based) ---------- */
     .cw-np-sparkle {
-      position: fixed;
-      z-index: 2147483645;
-      pointer-events: none;
-      font-family: 'Segoe UI Symbol', 'Apple Symbols', 'Noto Sans Symbols', 'Noto Sans Symbols 2', sans-serif;
+      position: fixed !important;
+      z-index: 2147483645 !important;
+      pointer-events: none !important;
+      font-family: 'Segoe UI Symbol', 'Apple Symbols', 'Noto Sans Symbols', 'Noto Sans Symbols 2', sans-serif !important;
       line-height: 1;
-      color: var(--cw-sparkle);
-      text-shadow:
-        0 0 4px var(--cw-sparkle),
-        0 0 8px var(--cw-sparkle),
-        0 0 12px var(--cw-sparkle);
+      color: var(--cw-sparkle, #ffd6ff) !important;
+      text-shadow: 0 0 4px var(--cw-sparkle, #ffd6ff), 0 0 8px var(--cw-sparkle, #ffd6ff), 0 0 12px var(--cw-sparkle, #ffd6ff) !important;
       opacity: 0;
       will-change: transform, opacity;
       user-select: none;
