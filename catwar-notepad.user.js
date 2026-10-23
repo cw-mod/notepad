@@ -780,50 +780,61 @@
     </div>
     <div class="cw-np-settings" data-el="settings">
       <div class="cw-np-palette-row">
-        <button class="cw-np-palette" data-palette="rose" title="Розовая" style="--p1:#3a1a2e;--p2:#ff6b9d"></button>
-        <button class="cw-np-palette" data-palette="light" title="Светло-серая" style="--p1:#e8e8ec;--p2:#5b6eff"></button>
-        <button class="cw-np-palette" data-palette="dark" title="Тёмно-серая" style="--p1:#2a2a2e;--p2:#7c9eff"></button>
-        <button class="cw-np-palette" data-palette="brown" title="Коричневая" style="--p1:#2e1f14;--p2:#d4a574"></button>
-        <button class="cw-np-palette" data-palette="night" title="Почти чёрная" style="--p1:#0d0d12;--p2:#6c5ce7"></button>
+        <button class="cw-np-palette" data-palette="default" title="Фиолетовая" style="--p1:#2e2249"></button>
+        <button class="cw-np-palette" data-palette="rose" title="Розовая" style="--p1:#3a1a2e"></button>
+        <button class="cw-np-palette" data-palette="light" title="Светло-серая" style="--p1:#e8e8ec"></button>
+        <button class="cw-np-palette" data-palette="dark" title="Тёмно-серая" style="--p1:#2a2a2e"></button>
+        <button class="cw-np-palette" data-palette="brown" title="Коричневая" style="--p1:#2e1f14"></button>
+        <button class="cw-np-palette" data-palette="night" title="Почти чёрная" style="--p1:#0d0d12"></button>
       </div>
       <div class="cw-np-set-row">
+        <label>Фон блокнота</label>
         <input type="color" data-color="bg">
         <input type="text" data-colortext="bg" placeholder="#1c1624f0">
       </div>
       <div class="cw-np-set-row">
+        <label>Фон текста</label>
         <input type="color" data-color="bgInput">
         <input type="text" data-colortext="bgInput" placeholder="#00000047">
       </div>
       <div class="cw-np-set-row">
+        <label>Цвет текста</label>
         <input type="color" data-color="text">
         <input type="text" data-colortext="text" placeholder="#fff">
       </div>
       <div class="cw-np-set-row">
+        <label>Цвет ссылок</label>
         <input type="color" data-color="link">
         <input type="text" data-colortext="link" placeholder="#fff">
       </div>
       <div class="cw-np-set-row">
+        <label>Рамка</label>
         <input type="color" data-color="border">
         <input type="text" data-colortext="border" placeholder="#fff">
       </div>
       <div class="cw-np-set-row">
+        <label>Шапка</label>
         <input type="color" data-color="header">
         <input type="text" data-colortext="header" placeholder="#3a2658f5">
       </div>
       <div class="cw-np-set-row">
+        <label>Акцент</label>
         <input type="color" data-color="accent">
         <input type="text" data-colortext="accent" placeholder="#fff">
       </div>
       <div class="cw-np-set-row">
+        <label>Акцент 2</label>
         <input type="color" data-color="accent2">
         <input type="text" data-colortext="accent2" placeholder="#fff">
       </div>
       <div class="cw-np-set-row">
+        <label>Блёстки</label>
         <input type="color" data-color="sparkle">
         <input type="text" data-colortext="sparkle" placeholder="#fff">
         <span class="cw-np-set-toggle-text" data-toggle-text="sparkles" title="">ВКЛ</span>
       </div>
       <div class="cw-np-set-row">
+        <label>Размер шрифта</label>
         <input type="range" min="10" max="24" step="0.5" value="15" data-fontsize>
         <span class="cw-np-set-fontsize-display" data-fontsize-display>15px</span>
       </div>
@@ -1008,6 +1019,10 @@
 
   // Palettes — 5 preset color schemes
   const PALETTES = {
+    default: {
+      bg: '#2e2249f0', bgInput: '#b388ff1a', text: '#f0e9ff', link: '#c4a3ff',
+      border: '#7a5cc5', header: '#3a2658f5', accent: '#b388ff', accent2: '#ff7eb3', sparkle: '#ffd6ff'
+    },
     rose: {
       bg: '#3a1a2ef0', bgInput: '#00000020', text: '#ffe4f0', link: '#ff9ecd',
       border: '#7a2a4a', header: '#4a1e35f5', accent: '#ff6b9d', accent2: '#ffb3d1', sparkle: '#ffd6e8'
