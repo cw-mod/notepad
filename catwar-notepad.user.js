@@ -1209,18 +1209,12 @@
   const SPARKLE_CHARS = ['✧', '✦', '⊹', '˖', '°', '·', '࣪', '✩', '✯', '˳', '⋆'];
 
   function makeSparkle(x, y, size, dx, dy, duration) {
-    const sp = document.createElement('span');
-    sp.className = 'cw-np-sparkle';
-    sp.textContent = SPARKLE_CHARS[Math.floor(Math.random() * SPARKLE_CHARS.length)];
-    sp.style.fontSize = size + 'px';
-    // position so the glyph's visual center is roughly at (x, y)
-    sp.style.left = (x - size / 2) + 'px';
-    sp.style.top = (y - size / 2) + 'px';
-    sp.style.setProperty('--dx', dx + 'px');
-    sp.style.setProperty('--dy', dy + 'px');
-    sp.style.animation = `cwSpkFloat ${duration}s ease-out forwards`;
+    // TEST: bright red div, no animation, stays 5s — should be 100% visible
+    const sp = document.createElement('div');
+    sp.style.cssText = `position:fixed !important; left:${x}px; top:${y}px; width:20px; height:20px; background:red; z-index:2147483647 !important; opacity:1 !important; pointer-events:none;`;
     document.documentElement.appendChild(sp);
-    setTimeout(() => sp.remove(), duration * 1000 + 300);
+    console.log('[CatWar Notepad] TEST sparkle at', x, y, 'in DOM:', sp.isConnected, 'parent:', sp.parentElement?.tagName);
+    setTimeout(() => sp.remove(), 5000);
   }
 
   function spawnSparkleBurst(x, y, count) {
