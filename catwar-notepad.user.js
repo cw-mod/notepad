@@ -141,6 +141,10 @@
   const _cwAuthor = [..._cwSig1, ..._cwSig2, ..._cwSig3]
     .map(n => String.fromCharCode(n ^ _cwKey)).join('');
 
+  // Author mascot icon (silhouette of a hedgehog). Small enough to embed
+  // directly so the credit line never depends on a network fetch.
+  const _cwAuthorIcon = 'data:image/webp;base64,UklGRnwEAABXRUJQVlA4WAoAAAAQAAAAPwAAGwAAQUxQSLIBAAABkHRrmyHJ2t9Aj23bK9ue2dm2ja29tq2Vbdu2bSsj4m13ZsxExAQgSqEVkqklfBcKQEzBivUaNaxRJhv8V0CmLutufWPC4M3pRTVEjPBJId2Yh0zorHMk2Qs+C4kWV0ljrHMkXcA79aEm1If0RAhMI41l4s5yUx6UOcTu0H4IqVbRWibpyMlA1/c0daH8UFjGwDFJ5760QcYFpPlRHNILhQEMmExnL/UYcpnW8FlGiMikVkoU+2JdcuhI0tDypBDwcykNU2iMJQ3nQUclUGlw4+x5PjuXkkQNu0WnsIl8fd0yVMdfJSCj0hjvAoZt7AmptNbRCOR6Y40NxxkOgocK/WkY9mrosh0nz84EEQUUNtKGYf/eHN95wdU/5L2MIhoh0l9zNgRn3r8m6fioMCSiVdjighASWvOXb8pDISrRkrRhOEfDt5WhEbnE8D8M1/BFRWh4qFDjgbVJWOuSCHinHDR8FFrvJI0x1hhL0hkTBIHl0fxQ8FKi2OsPz5j45QvfmficNFDwNnOerN1XHzi6Z37r1KJIvc6jJs2YXA+Q+LelgMdCCKWEkFoJIZVOqPDfBlZQOCCkAgAAMBAAnQEqQAAcAD5RIo1EI6IhGA38ADgFBLYAXZlB5t+8fgzJ6+bz8Z0gPEn6QHmA/Vr9juEA/u39u9Tv/Aewt+oHsQeVf+4HwRfub7An6kf+O6zfSBLIlgQZMqB7fdQBRKcEWSDdP+ZB61Q7/6hdVSWVdHtVhVdRvih2yloofEtFaH0y2WzJq05AAP7//oN2X/he5hIrLkEmONoKf8Tz0W/4I5zquKev/9mN4/dw2cvkqheub+0YyR1+20lKMNvVOVIMzv57SJna6XEVH/X7y5yyNXH5zCee/YjCh8fcSy9nbUb7D8f+kHsd2//BocRnA7t043k+wF6s1qjW+RdZ9bSIYVEnx5thB5v2ph/z1tMwwHbeeZfSEsjYcbF8EUV5hZqkC6oBDP9IalTYJJ4B3vipo0rtr4FmdPES6rTx1Mt86dgLVUaVIvR6zAcxdbxMNMKHErBZr/98XOo+DcRB9dO9GfizOhOIHvjv+bH+Vf4aVNznMTH4hDqFZWYWLzq/4n0KjnWFdUAIAfME5lGkF+v288n5mo0D4hNBZwDb21dqtJBYQIfIJ9GX7kAeQkVaohzh2VXhtfUZ/qB1ehM2G3RB9UB5Lth/sgwMaCNSxevsZ71rf/ss4xgPJOpz5VCp1Zn/uhZ03dfLMl7XPLUK1+tqxl4SG3o2Vf0G90d5aub3GmiHkEqPY6Z49cp/DvVeUo9IEpvvJ+lTG/Z3iXoBMH/eV18ecXOHL+6Z3Tigb6FkqeZEY+aYJFq/8H+JNxL6m+WDH2IWd7T/uMbPPlzqjSzyxirdeErv63b7BC2pGnYkdPjLtiSJtd66VuZ+Zneh5zcHffDThNQT6jb9bRVENVSBi+/ilruvrgEE/G1Pum/vQDpZgCMfDm/i0mv/5JeK+xkAAA==';
+
   /* ============================================================
    *  INJECT STYLES
    * ============================================================ */
@@ -529,6 +533,18 @@
       font-style: normal;
       opacity: 0.95;
     }
+    .cw-np-credit-icon {
+      height: 14px;
+      width: auto;
+      vertical-align: -3px;
+      margin: 0 3px 0 1px;
+      border-radius: 2px;
+      user-select: none;
+      pointer-events: none;
+      opacity: 0.9;
+      display: inline-block;
+      flex-shrink: 0;
+    }
     .cw-np-iconbtn {
       width: 30px; height: 30px;
       padding: 5px !important;
@@ -882,7 +898,7 @@
       <button class="cw-np-btn cw-np-editbtn" data-act="edit" title="">${icon('pencil')}</button>
       <button class="cw-np-btn primary cw-np-editbtn" data-act="save" title="" style="display:none">${icon('save')}</button>
       <div class="cw-np-footer-spacer">
-        <span class="cw-np-credit">by <span data-author></span></span>
+        <span class="cw-np-credit">by <img class="cw-np-credit-icon" alt="" aria-hidden="true" /><span data-author></span></span>
       </div>
       <button class="cw-np-btn cw-np-iconbtn" data-act="import" title="">${icon('folder-down', 16)}</button>
       <button class="cw-np-btn cw-np-iconbtn" data-act="export" title="">${icon('folder-up', 16)}</button>
@@ -2354,6 +2370,8 @@
 
   const _authorSpan = panel.querySelector('[data-author]');
   if (_authorSpan) _authorSpan.textContent = _cwAuthor;
+  const _authorIcon = panel.querySelector('.cw-np-credit-icon');
+  if (_authorIcon) _authorIcon.src = _cwAuthorIcon;
   const _headerTitle = panel.querySelector('.cw-np-title');
   if (_headerTitle) _headerTitle.title = 'CatWar Notepad by ' + _cwAuthor;
   root.setAttribute('data-cw-author', _cwAuthor);
