@@ -1964,6 +1964,7 @@
    * ============================================================ */
   // FAB click toggles panel
   fab.addEventListener('click', (e) => {
+    console.log('[CatWar Notepad] FAB click fired, detail:', e.detail, 'dragged:', fab._cwWasDragged, 'collapsed:', state.collapsed, 'sparkles:', state.sparklesEnabled);
     if (e.detail === 0) return;
     // If the FAB was actually dragged (not just clicked), suppress the
     // synthetic click that fires after mouseup — otherwise dragging the
