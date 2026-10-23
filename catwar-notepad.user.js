@@ -650,9 +650,12 @@
     }
     .cw-np-set-reset {
       width: 100%; margin-top: 4px; padding: 7px; font-size: 14px;
-      background: rgba(231,76,60,0.15); border: 1px solid rgba(231,76,60,0.3); color: var(--cw-text); border-radius: 6px; cursor: pointer;
+      background: color-mix(in srgb, var(--cw-accent) 15%, transparent);
+      border: 1px solid color-mix(in srgb, var(--cw-accent) 35%, transparent);
+      color: var(--cw-text); border-radius: 6px; cursor: pointer;
+      transition: background .12s ease;
     }
-    .cw-np-set-reset:hover { background: rgba(231,76,60,0.3); }
+    .cw-np-set-reset:hover { background: color-mix(in srgb, var(--cw-accent) 30%, transparent); }
 
     /* Palettes */
     .cw-np-palette-row { display: flex; gap: 6px; margin-bottom: 8px; }
@@ -780,12 +783,12 @@
     </div>
     <div class="cw-np-settings" data-el="settings">
       <div class="cw-np-palette-row">
-        <button class="cw-np-palette" data-palette="default" title="Фиолетовая" style="--p1:#2e2249"></button>
-        <button class="cw-np-palette" data-palette="rose" title="Розовая" style="--p1:#3a1a2e"></button>
-        <button class="cw-np-palette" data-palette="light" title="Светло-серая" style="--p1:#e8e8ec"></button>
-        <button class="cw-np-palette" data-palette="dark" title="Тёмно-серая" style="--p1:#2a2a2e"></button>
-        <button class="cw-np-palette" data-palette="brown" title="Коричневая" style="--p1:#2e1f14"></button>
-        <button class="cw-np-palette" data-palette="night" title="Почти чёрная" style="--p1:#0d0d12"></button>
+        <button class="cw-np-palette" data-palette="default" style="--p1:#2e2249"></button>
+        <button class="cw-np-palette" data-palette="rose" style="--p1:#3a1a2e"></button>
+        <button class="cw-np-palette" data-palette="light" style="--p1:#e8e8ec"></button>
+        <button class="cw-np-palette" data-palette="dark" style="--p1:#2a2a2e"></button>
+        <button class="cw-np-palette" data-palette="brown" style="--p1:#2e1f14"></button>
+        <button class="cw-np-palette" data-palette="night" style="--p1:#0d0d12"></button>
       </div>
       <div class="cw-np-set-row">
         <label>Фон блокнота</label>
