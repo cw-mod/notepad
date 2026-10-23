@@ -168,7 +168,7 @@
       user-select: none;
       pointer-events: auto;
     }
-    .cw-np-fab:hover { transform: scale(1.08); box-shadow: 0 0 0 3px rgba(255,255,255,0.35), 0 6px 24px rgba(0,0,0,0.55), 0 0 32px color-mix(in srgb, var(--cw-accent2) 80%, transparent); }
+    .cw-np-fab:hover { box-shadow: 0 0 0 3px rgba(255,255,255,0.35), 0 6px 24px rgba(0,0,0,0.55), 0 0 32px color-mix(in srgb, var(--cw-accent2) 80%, transparent); }
     .cw-np-fab:active { cursor: grabbing; }
     .cw-np-fab.locked { cursor: default; }
     .cw-np-fab.locked::after {
