@@ -1228,6 +1228,7 @@
 
   function spawnSparkleBurst(x, y, count) {
     if (!state.sparklesEnabled) return;
+    console.log('[CatWar Notepad] spawnSparkleBurst at', x, y, 'count', count);
     for (let i = 0; i < count; i++) {
       const size = 12 + Math.random() * 12;       // 12–24px font
       const angle = Math.random() * Math.PI * 2;
