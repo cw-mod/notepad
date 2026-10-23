@@ -1219,7 +1219,7 @@
     sp.style.setProperty('--dx', dx + 'px');
     sp.style.setProperty('--dy', dy + 'px');
     sp.style.animation = `cwSpkFloat ${duration}s ease-out forwards`;
-    document.body.appendChild(sp);
+    document.documentElement.appendChild(sp);
     setTimeout(() => sp.remove(), duration * 1000 + 300);
   }
 
