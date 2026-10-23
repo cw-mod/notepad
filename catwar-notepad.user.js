@@ -1095,15 +1095,22 @@
       startX = p.clientX;
       startY = p.clientY;
       if (kind === 'fab') {
-        // FAB normally uses right/bottom — switch to left/top for drag.
-        // Use getBoundingClientRect for the starting position (temporary).
-        const rect = target.getBoundingClientRect();
+        // FAB uses right/bottom — convert to left/top for drag math.
+        // Read from inline style (NOT getBoundingClientRect) to avoid the
+        // :hover scale(1.08) drift — the rect shifts ~2px on hover.
+        const r = parseFloat(target.style.right);
+        const b = parseFloat(target.style.bottom);
+        if (!isNaN(r) && !isNaN(b)) {
+          origX = window.innerWidth - r - target.offsetWidth;
+          origY = window.innerHeight - b - target.offsetHeight;
+        } else {
+          origX = window.innerWidth - 20 - target.offsetWidth;
+          origY = window.innerHeight - 20 - target.offsetHeight;
+        }
         target.style.right = 'auto';
         target.style.bottom = 'auto';
-        target.style.left = rect.left + 'px';
-        target.style.top = rect.top + 'px';
-        origX = rect.left;
-        origY = rect.top;
+        target.style.left = origX + 'px';
+        target.style.top = origY + 'px';
       } else {
         origX = parseFloat(target.style.left);
         origY = parseFloat(target.style.top);
