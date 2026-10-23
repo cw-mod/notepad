@@ -537,7 +537,7 @@
       height: 14px;
       width: auto;
       vertical-align: -3px;
-      margin: 0 3px 0 1px;
+      margin: 0 0 0 4px;
       border-radius: 2px;
       user-select: none;
       pointer-events: none;
@@ -898,7 +898,7 @@
       <button class="cw-np-btn cw-np-editbtn" data-act="edit" title="">${icon('pencil')}</button>
       <button class="cw-np-btn primary cw-np-editbtn" data-act="save" title="" style="display:none">${icon('save')}</button>
       <div class="cw-np-footer-spacer">
-        <span class="cw-np-credit">by <img class="cw-np-credit-icon" alt="" aria-hidden="true" /><span data-author></span></span>
+        <span class="cw-np-credit">by <span data-author></span><img class="cw-np-credit-icon" alt="" aria-hidden="true" /></span>
       </div>
       <button class="cw-np-btn cw-np-iconbtn" data-act="import" title="">${icon('folder-down', 16)}</button>
       <button class="cw-np-btn cw-np-iconbtn" data-act="export" title="">${icon('folder-up', 16)}</button>
