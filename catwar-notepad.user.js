@@ -620,6 +620,37 @@
     .cw-np-tab-menu-item-close:hover { background: rgba(231,76,60,0.7); opacity: 1; }
     .cw-np-tab-menu-item.active .cw-np-tab-menu-item-close { background: rgba(0,0,0,0.35); }
 
+    /* ---------- SORT MENU ---------- */
+    .cw-np-sort-menu {
+      position: fixed;
+      z-index: 2147483647;
+      pointer-events: auto;
+      background-image: linear-gradient(var(--cw-bg), var(--cw-bg));
+      background-color: #1c1624;
+      border: 1px solid var(--cw-border);
+      border-radius: 10px;
+      padding: 4px;
+      min-width: 170px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      display: none;
+    }
+    .cw-np-sort-menu.open { display: block; }
+    .cw-np-sort-menu-item {
+      padding: 7px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px; font-weight: 600;
+      color: var(--cw-text);
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+      transition: background .12s ease;
+    }
+    .cw-np-sort-menu-item:hover { background: color-mix(in srgb, var(--cw-accent) 25%, transparent); }
+    .cw-np-sort-menu-item svg { flex-shrink: 0; opacity: 0.85; }
+
     /* ---------- SETTINGS ---------- */
     .cw-np-settings {
       display: none;
@@ -751,6 +782,8 @@
     'clipboard': '<rect width="8" height="4" x="8" y="2" rx="1" ry="1" /> <path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2" />',
     'clipboard-check': '<path d="M11.5 16.5 14 19l5-5" /> <path d="M8 21h8a2 2 0 0 0 2-2V7l-2-2H6L4 7v12a2 2 0 0 0 2 2Z" /> <path d="M16 3v4" /> <path d="M8 3v4" />',
     'arrow-down-narrow-wide': '<path d="m3 16 4 4 4-4" /> <path d="M7 20V4" /> <path d="M11 4h10" /> <path d="M11 8h7" /> <path d="M11 12h4" />',
+    'arrow-down-a-z': '<path d="m3 16 4 4 4-4" /> <path d="M7 20V4" /> <path d="M11 4h10" /> <path d="M15 4v16" /> <path d="m18 16-3 4-3-4" /> <path d="M11 8h7" />',
+    'clock': '<circle cx="12" cy="12" r="10" /> <path d="M12 6v6l4 2" />',
   };
 
   // Render an icon: icon('lock', 14) -> inline svg markup
@@ -875,6 +908,12 @@
   root.appendChild(tabMenu);
   let tabMenuTrigger = null;
 
+  // sort menu (popup with 2 sort options: alphabet, date)
+  const sortMenu = document.createElement('div');
+  sortMenu.className = 'cw-np-sort-menu';
+  root.appendChild(sortMenu);
+  let sortMenuTrigger = null;
+
   // Single-row tab strip. When tabs overflow, ◀ ▶ arrows page the strip sideways.
   let _tabStrip = null, _tabArrowL = null, _tabArrowR = null;
 
@@ -911,6 +950,7 @@
       closeTabMenu();
       return;
     }
+    closeSortMenu();
     if (tabMenuTrigger) tabMenuTrigger.classList.remove('open');
     tabMenuTrigger = triggerEl;
     triggerEl.classList.add('open');
@@ -968,6 +1008,80 @@
     setTimeout(() => {
       document.addEventListener('mousedown', onTabMenuOutsideClick);
       document.addEventListener('keydown', onTabMenuEsc);
+    }, 0);
+  }
+
+  // ---- SORT MENU ----
+  function closeSortMenu() {
+    sortMenu.classList.remove('open');
+    if (sortMenuTrigger) {
+      sortMenuTrigger.classList.remove('open');
+      sortMenuTrigger = null;
+    }
+    document.removeEventListener('mousedown', onSortMenuOutsideClick);
+    document.removeEventListener('keydown', onSortMenuEsc);
+  }
+  function onSortMenuOutsideClick(e) {
+    if (sortMenu.contains(e.target)) return;
+    if (sortMenuTrigger && sortMenuTrigger.contains(e.target)) return;
+    closeSortMenu();
+  }
+  function onSortMenuEsc(e) {
+    if (e.key === 'Escape') closeSortMenu();
+  }
+  function openSortMenu(triggerEl) {
+    if (sortMenuTrigger === triggerEl && sortMenu.classList.contains('open')) {
+      closeSortMenu();
+      return;
+    }
+    closeTabMenu();
+    if (sortMenuTrigger) sortMenuTrigger.classList.remove('open');
+    sortMenuTrigger = triggerEl;
+    triggerEl.classList.add('open');
+
+    const items = [
+      { key: 'alpha', label: 'По алфавиту', icon: icon('arrow-down-a-z', 14), cmp: tabCompare },
+      { key: 'date',  label: 'По дате изменения', icon: icon('clock', 14), cmp: tabCompareByDate }
+    ];
+    sortMenu.innerHTML = '';
+    items.forEach(it => {
+      const item = document.createElement('div');
+      item.className = 'cw-np-sort-menu-item';
+      const ic = document.createElement('span');
+      ic.innerHTML = it.icon;
+      const lbl = document.createElement('span');
+      lbl.textContent = it.label;
+      item.appendChild(ic);
+      item.appendChild(lbl);
+      item.addEventListener('click', () => {
+        state.sections.sort(it.cmp);
+        store.set('sections', state.sections);
+        renderSections();
+        const r = triggerEl.getBoundingClientRect();
+        spawnSparkleBurst(r.left + r.width / 2, r.top + r.height / 2, 8);
+        closeSortMenu();
+      });
+      sortMenu.appendChild(item);
+    });
+
+    const r = triggerEl.getBoundingClientRect();
+    sortMenu.style.visibility = 'hidden';
+    sortMenu.classList.add('open');
+    const mw = sortMenu.offsetWidth;
+    const mh = sortMenu.offsetHeight;
+    let left = r.right - mw;
+    if (left < 8) left = 8;
+    if (left + mw > window.innerWidth - 8) left = Math.max(8, window.innerWidth - mw - 8);
+    let top = r.top - mh - 4;
+    if (top < 8) top = r.bottom + 4;
+    if (top + mh > window.innerHeight - 8) top = Math.max(8, window.innerHeight - mh - 8);
+    sortMenu.style.left = left + 'px';
+    sortMenu.style.top = top + 'px';
+    sortMenu.style.visibility = '';
+
+    setTimeout(() => {
+      document.addEventListener('mousedown', onSortMenuOutsideClick);
+      document.addEventListener('keydown', onSortMenuEsc);
     }, 0);
   }
 
@@ -1502,6 +1616,13 @@
     const bt = (b && b.title) || '';
     return at.localeCompare(bt, undefined, { numeric: true, sensitivity: 'base' });
   }
+  // Sort by last-modified timestamp, newest first. Sections lacking `updatedAt`
+  // fall back to `createdAt`, then to 0 (oldest).
+  function tabCompareByDate(a, b) {
+    const at = (a && (a.updatedAt || a.createdAt)) || 0;
+    const bt = (b && (b.updatedAt || b.createdAt)) || 0;
+    return bt - at;
+  }
 
   const activeEls = { sec: null, content: null, textarea: null, bbbar: null };
   let footerEditBtn, footerSaveBtn;
@@ -1881,7 +2002,8 @@
    *  ACTIONS
    * ============================================================ */
   function addSection() {
-    const sec = { id: genId(), title: nextDefaultName(), content: '' };
+    const now = Date.now();
+    const sec = { id: genId(), title: nextDefaultName(), content: '', createdAt: now, updatedAt: now };
     state.sections.push(sec);
     state.activeId = sec.id;
     store.set('sections', state.sections);
@@ -1931,15 +2053,20 @@
         if (Array.isArray(data.sections)) {
           const seen = new Set();
           const cleaned = [];
+          const now = Date.now();
           for (const raw of data.sections) {
             if (!raw || typeof raw !== 'object') continue;
             let id = raw.id;
             if (!id || seen.has(id)) id = genId();
             seen.add(id);
+            const created = typeof raw.createdAt === 'number' ? raw.createdAt : now;
+            const updated = typeof raw.updatedAt === 'number' ? raw.updatedAt : created;
             cleaned.push({
               id,
               title: typeof raw.title === 'string' ? raw.title : 'Без названия',
-              content: typeof raw.content === 'string' ? raw.content : ''
+              content: typeof raw.content === 'string' ? raw.content : '',
+              createdAt: created,
+              updatedAt: updated
             });
           }
           state.sections = cleaned;
@@ -2059,6 +2186,7 @@
   footerSaveBtn.addEventListener('click', () => {
     if (!activeEls.sec) return;
     activeEls.sec.content = activeEls.textarea.value;
+    activeEls.sec.updatedAt = Date.now();
     activeEls.content.innerHTML = bbcodeToHtml(activeEls.sec.content);
     activeEls.content.classList.remove('editing');
     activeEls.textarea.classList.remove('editing');
@@ -2078,15 +2206,13 @@
       spawnSparkleBurst(e.clientX, e.clientY, 4);
       return;
     }
-    state.sections.sort(tabCompare);
-    store.set('sections', state.sections);
-    renderSections();
-    spawnSparkleBurst(e.clientX, e.clientY, 8);
+    openSortMenu(e.currentTarget);
   });
   panel.querySelector('.cw-np-footer [data-act="clearAll"]').addEventListener('click', (e) => {
     spawnSparkleBurst(e.clientX, e.clientY, 6);
     if (!confirm('Удалить все вкладки вместе с содержимым? Это действие нельзя отменить.')) return;
-    const fresh = { id: 's' + Date.now(), title: 'Заметки 1', content: '' };
+    const now = Date.now();
+    const fresh = { id: 's' + Date.now(), title: 'Заметки 1', content: '', createdAt: now, updatedAt: now };
     state.sections = [fresh];
     state.activeId = fresh.id;
     store.set('sections', state.sections);
