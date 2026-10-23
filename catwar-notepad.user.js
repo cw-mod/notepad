@@ -62,15 +62,15 @@
     locked: false,
     collapsed: false,
     colors: {
-      bg:       '#e8e8ecf5',
-      bgInput:  '#00000010',
-      text:     '#2a2a2e',
-      link:     '#7d7d7d',
-      border:   '#c0c0c8',
-      header:   '#dcdce2f5',
-      accent:   '#8f8f8f',
-      accent2:  '#000000',
-      sparkle:  '#ffffff'
+      bg:       '#2e2249f0',
+      bgInput:  '#b388ff1a',
+      text:     '#f0e9ff',
+      link:     '#c4a3ff',
+      border:   '#7a5cc5',
+      header:   '#3a2658f5',
+      accent:   '#b388ff',
+      accent2:  '#ff7eb3',
+      sparkle:  '#ffd6ff'
     },
     fontSize: 15
   };
@@ -91,7 +91,7 @@
     locked:    store.get('locked',   DEFAULTS.locked),
     collapsed: _currentPath in _pathStates ? _pathStates[_currentPath] : true,
     colors:    Object.assign({}, DEFAULTS.colors, store.get('colors', {})),
-    activePalette: store.get('activePalette', null),
+    activePalette: store.get('activePalette') || 'default',
     sparklesEnabled: store.get('sparklesEnabled', true),
     fontSize: store.get('fontSize', DEFAULTS.fontSize),
     settingsOpen: false,
