@@ -340,6 +340,7 @@
       white-space: pre-wrap; word-wrap: break-word;
       color: var(--cw-text);
       min-height: 80px;
+      max-height: 60vh;
       overflow-y: auto;
       background: transparent;
       border-radius: 0;
