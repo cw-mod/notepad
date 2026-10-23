@@ -655,19 +655,17 @@
     .cw-np-set-reset:hover { background: rgba(231,76,60,0.3); }
 
     /* Palettes */
-    .cw-np-set-palettes { margin-bottom: 6px; }
-    .cw-np-set-palettes > label { display: block; font-size: 15px; color: var(--cw-text); margin-bottom: 5px; }
-    .cw-np-palette-row { display: flex; gap: 6px; }
+    .cw-np-palette-row { display: flex; gap: 6px; margin-bottom: 8px; }
     .cw-np-palette {
-      width: 34px; height: 34px;
+      width: 32px; height: 32px;
       border-radius: 7px;
-      border: 2px solid rgba(255,255,255,0.15);
+      border: 2px solid rgba(255,255,255,0.3);
       cursor: pointer;
-      background: linear-gradient(135deg, var(--p1) 50%, var(--p2) 50%);
+      background: var(--p1);
       transition: transform .12s ease, border-color .12s ease;
       flex-shrink: 0;
     }
-    .cw-np-palette:hover { transform: scale(1.12); border-color: rgba(255,255,255,0.5); }
+    .cw-np-palette:hover { transform: scale(1.12); border-color: rgba(255,255,255,0.7); }
 
     /* Clickable on/off text label (e.g. for sparkles toggle) */
     .cw-np-set-toggle-text {
@@ -781,66 +779,53 @@
       <button class="cw-np-btn" data-act="collapse" title="">${icon('minus')}</button>
     </div>
     <div class="cw-np-settings" data-el="settings">
+      <div class="cw-np-palette-row">
+        <button class="cw-np-palette" data-palette="rose" title="Розовая" style="--p1:#3a1a2e;--p2:#ff6b9d"></button>
+        <button class="cw-np-palette" data-palette="light" title="Светло-серая" style="--p1:#e8e8ec;--p2:#5b6eff"></button>
+        <button class="cw-np-palette" data-palette="dark" title="Тёмно-серая" style="--p1:#2a2a2e;--p2:#7c9eff"></button>
+        <button class="cw-np-palette" data-palette="brown" title="Коричневая" style="--p1:#2e1f14;--p2:#d4a574"></button>
+        <button class="cw-np-palette" data-palette="night" title="Почти чёрная" style="--p1:#0d0d12;--p2:#6c5ce7"></button>
+      </div>
       <div class="cw-np-set-row">
-        <label>Фон блокнота</label>
         <input type="color" data-color="bg">
         <input type="text" data-colortext="bg" placeholder="#1c1624f0">
       </div>
       <div class="cw-np-set-row">
-        <label>Фон текста</label>
         <input type="color" data-color="bgInput">
         <input type="text" data-colortext="bgInput" placeholder="#00000047">
       </div>
       <div class="cw-np-set-row">
-        <label>Цвет текста</label>
         <input type="color" data-color="text">
         <input type="text" data-colortext="text" placeholder="#fff">
       </div>
       <div class="cw-np-set-row">
-        <label>Цвет ссылок</label>
         <input type="color" data-color="link">
         <input type="text" data-colortext="link" placeholder="#fff">
       </div>
       <div class="cw-np-set-row">
-        <label>Рамка</label>
         <input type="color" data-color="border">
         <input type="text" data-colortext="border" placeholder="#fff">
       </div>
       <div class="cw-np-set-row">
-        <label>Шапка</label>
         <input type="color" data-color="header">
         <input type="text" data-colortext="header" placeholder="#3a2658f5">
       </div>
       <div class="cw-np-set-row">
-        <label>Акцент</label>
         <input type="color" data-color="accent">
         <input type="text" data-colortext="accent" placeholder="#fff">
       </div>
       <div class="cw-np-set-row">
-        <label>Акцент 2</label>
         <input type="color" data-color="accent2">
         <input type="text" data-colortext="accent2" placeholder="#fff">
       </div>
       <div class="cw-np-set-row">
-        <label>Блёстки</label>
         <input type="color" data-color="sparkle">
         <input type="text" data-colortext="sparkle" placeholder="#fff">
         <span class="cw-np-set-toggle-text" data-toggle-text="sparkles" title="">ВКЛ</span>
       </div>
       <div class="cw-np-set-row">
-        <label>Размер шрифта</label>
         <input type="range" min="10" max="24" step="0.5" value="15" data-fontsize>
         <span class="cw-np-set-fontsize-display" data-fontsize-display>15px</span>
-      </div>
-      <div class="cw-np-set-palettes">
-        <label>Палитры</label>
-        <div class="cw-np-palette-row">
-          <button class="cw-np-palette" data-palette="rose" title="Розовая" style="--p1:#3a1a2e;--p2:#ff6b9d"></button>
-          <button class="cw-np-palette" data-palette="light" title="Светло-серая" style="--p1:#e8e8ec;--p2:#5b6eff"></button>
-          <button class="cw-np-palette" data-palette="dark" title="Тёмно-серая" style="--p1:#2a2a2e;--p2:#7c9eff"></button>
-          <button class="cw-np-palette" data-palette="brown" title="Коричневая" style="--p1:#2e1f14;--p2:#d4a574"></button>
-          <button class="cw-np-palette" data-palette="night" title="Почти чёрная" style="--p1:#0d0d12;--p2:#6c5ce7"></button>
-        </div>
       </div>
       <button class="cw-np-set-reset" data-act="resetColors">Сбросить цвета</button>
     </div>
