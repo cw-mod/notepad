@@ -1998,6 +1998,7 @@
 
   footerEditBtn.addEventListener('click', () => {
     if (!activeEls.content) return;
+    const r = footerEditBtn.getBoundingClientRect();
     activeEls.content.classList.add('editing');
     activeEls.textarea.classList.add('editing');
     activeEls.bbbar.classList.add('editing');
@@ -2005,7 +2006,7 @@
     footerSaveBtn.style.display = 'inline-flex';
     activeEls.textarea.focus();
     activeEls.textarea.setSelectionRange(activeEls.textarea.value.length, activeEls.textarea.value.length);
-    spawnSparkleBurst(footerEditBtn.getBoundingClientRect().left + 12, footerEditBtn.getBoundingClientRect().top + 12, 6);
+    spawnSparkleBurst(r.left + 12, r.top + 12, 6);
   });
 
   footerSaveBtn.addEventListener('click', () => {
