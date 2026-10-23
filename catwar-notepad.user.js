@@ -91,6 +91,7 @@
     locked:    store.get('locked',   DEFAULTS.locked),
     collapsed: _currentPath in _pathStates ? _pathStates[_currentPath] : true,
     colors:    Object.assign({}, DEFAULTS.colors, store.get('colors', {})),
+    activePalette: store.get('activePalette', null),
     sparklesEnabled: store.get('sparklesEnabled', true),
     fontSize: store.get('fontSize', DEFAULTS.fontSize),
     settingsOpen: false,
@@ -2107,6 +2108,8 @@
         newVal = newVal + oldVal.slice(7);
       }
       state.colors[key] = newVal;
+      state.activePalette = null;
+      store.set('activePalette', null);
       const txtInp = settings.querySelector(`input[type="text"][data-colortext="${key}"]`);
       if (txtInp) txtInp.value = newVal;
       applyColors();
@@ -2126,6 +2129,8 @@
         return;
       }
       state.colors[key] = v;
+      state.activePalette = null;
+      store.set('activePalette', null);
       const pickerInp = settings.querySelector(`input[type="color"][data-color="${key}"]`);
       if (pickerInp) pickerInp.value = toHexColor(v);
       applyColors();
@@ -2133,7 +2138,9 @@
     });
   });
   panel.querySelector('[data-act="resetColors"]').addEventListener('click', () => {
-    state.colors = Object.assign({}, DEFAULTS.colors);
+    const paletteId = state.activePalette;
+    const base = (paletteId && PALETTES[paletteId]) ? PALETTES[paletteId] : DEFAULTS.colors;
+    state.colors = Object.assign({}, base);
     state.fontSize = DEFAULTS.fontSize;
     store.set('colors', state.colors);
     store.set('fontSize', state.fontSize);
@@ -2147,7 +2154,9 @@
       const p = PALETTES[btn.dataset.palette];
       if (!p) return;
       state.colors = Object.assign({}, p);
+      state.activePalette = btn.dataset.palette;
       store.set('colors', state.colors);
+      store.set('activePalette', state.activePalette);
       applyColors();
       const r = btn.getBoundingClientRect();
       spawnSparkleBurst(r.left + r.width / 2, r.top + r.height / 2, 10);
