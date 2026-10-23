@@ -1018,21 +1018,33 @@
    *  POSITIONING
    * ============================================================ */
   function applyPositions() {
-    // FAB: save preferred position (where the user put it). On display,
-    // clamp to viewport so the FAB is always reachable. But DON'T overwrite
-    // the preferred position — when the window grows back, the FAB returns.
-    if (!state.fabPos || typeof state.fabPos.x !== 'number') {
-      state.fabPos = { x: window.innerWidth - fab.offsetWidth - 20, y: window.innerHeight - fab.offsetHeight - 20 };
-      store.set('fabPos', state.fabPos);
-    }
-    const fabDisp = clampPos(fab, state.fabPos.x, state.fabPos.y);
-    fab.style.left = fabDisp.x + 'px';
-    fab.style.top = fabDisp.y + 'px';
-
-    // Panel: same logic — clamp for display, keep preferred position.
+    // Panel: left/top, clamp for display only (preferred position preserved).
     const panelDisp = clampPos(panel, state.panelPos.x, state.panelPos.y);
     panel.style.left = panelDisp.x + 'px';
     panel.style.top = panelDisp.y + 'px';
+
+    // FAB: use right/bottom so it stays relative to the viewport edges.
+    // When the window resizes, "right: 20px" always means 20px from the
+    // right edge — the FAB follows the corner instead of staying at a
+    // fixed pixel position that may end up mid-screen on a larger window.
+    if (!state.fabRight || typeof state.fabRight !== 'number') {
+      // Fresh install or migration from old fabPos — default to bottom-right.
+      if (state.fabPos && typeof state.fabPos.x === 'number') {
+        state.fabRight = window.innerWidth - state.fabPos.x - fab.offsetWidth;
+        state.fabBottom = window.innerHeight - state.fabPos.y - fab.offsetHeight;
+      } else {
+        state.fabRight = 20;
+        state.fabBottom = 20;
+      }
+      store.set('fabRight', state.fabRight);
+      store.set('fabBottom', state.fabBottom);
+    }
+    fab.style.left = 'auto';
+    fab.style.top = 'auto';
+    const rMax = Math.max(2, window.innerWidth - fab.offsetWidth - 4);
+    const bMax = Math.max(2, window.innerHeight - fab.offsetHeight - 4);
+    fab.style.right = Math.max(2, Math.min(state.fabRight, rMax)) + 'px';
+    fab.style.bottom = Math.max(2, Math.min(state.fabBottom, bMax)) + 'px';
   }
 
   function clampPos(el, x, y) {
@@ -1082,13 +1094,22 @@
       const p = e.touches ? e.touches[0] : e;
       startX = p.clientX;
       startY = p.clientY;
-      // Read from inline style — getBoundingClientRect is affected by :hover
-      // transform scale (e.g., FAB's scale(1.08) shifts the rect ~2px up-left),
-      // which caused the FAB to "drift" on every click.
-      origX = parseFloat(target.style.left);
-      origY = parseFloat(target.style.top);
-      if (isNaN(origX)) origX = 0;
-      if (isNaN(origY)) origY = 0;
+      if (kind === 'fab') {
+        // FAB normally uses right/bottom — switch to left/top for drag.
+        // Use getBoundingClientRect for the starting position (temporary).
+        const rect = target.getBoundingClientRect();
+        target.style.right = 'auto';
+        target.style.bottom = 'auto';
+        target.style.left = rect.left + 'px';
+        target.style.top = rect.top + 'px';
+        origX = rect.left;
+        origY = rect.top;
+      } else {
+        origX = parseFloat(target.style.left);
+        origY = parseFloat(target.style.top);
+        if (isNaN(origX)) origX = 0;
+        if (isNaN(origY)) origY = 0;
+      }
       target.style.transition = 'none';
       e.preventDefault();
       document.addEventListener('mousemove', onMove);
@@ -1117,16 +1138,36 @@
       if (!dragging) return;
       dragging = false;
       target.style.transition = '';
-      // Read final position from inline style (post-drag), not getBoundingClientRect
-      // (which would be skewed by the :hover scale on FAB).
-      const left = parseFloat(target.style.left);
-      const top = parseFloat(target.style.top);
-      if (!isNaN(left) && !isNaN(top)) {
-        const pos = clampPos(target, left, top);
-        target.style.left = pos.x + 'px';
-        target.style.top = pos.y + 'px';
-        if (kind === 'panel') { state.panelPos = pos; store.set('panelPos', pos); }
-        else { state.fabPos = pos; store.set('fabPos', pos); }
+      if (kind === 'fab') {
+        // FAB uses right/bottom — convert final left/top back to right/bottom.
+        const left = parseFloat(target.style.left);
+        const top = parseFloat(target.style.top);
+        if (!isNaN(left) && !isNaN(top)) {
+          const r = window.innerWidth - left - target.offsetWidth;
+          const b = window.innerHeight - top - target.offsetHeight;
+          state.fabRight = Math.max(2, r);
+          state.fabBottom = Math.max(2, b);
+          store.set('fabRight', state.fabRight);
+          store.set('fabBottom', state.fabBottom);
+          // Switch back to right/bottom CSS
+          target.style.left = 'auto';
+          target.style.top = 'auto';
+          const rMax = Math.max(2, window.innerWidth - target.offsetWidth - 4);
+          const bMax = Math.max(2, window.innerHeight - target.offsetHeight - 4);
+          target.style.right = Math.max(2, Math.min(state.fabRight, rMax)) + 'px';
+          target.style.bottom = Math.max(2, Math.min(state.fabBottom, bMax)) + 'px';
+        }
+      } else {
+        // Panel uses left/top.
+        const left = parseFloat(target.style.left);
+        const top = parseFloat(target.style.top);
+        if (!isNaN(left) && !isNaN(top)) {
+          const pos = clampPos(target, left, top);
+          target.style.left = pos.x + 'px';
+          target.style.top = pos.y + 'px';
+          state.panelPos = pos;
+          store.set('panelPos', pos);
+        }
       }
       // Mark whether this was a real drag (vs a tap/click) so click handlers
       // can suppress the synthetic click that fires after mouseup.
