@@ -62,15 +62,15 @@
     locked: false,
     collapsed: false,
     colors: {
-      bg:       '#2e2249f0',
-      bgInput:  '#b388ff1a',
-      text:     '#f0e9ff',
-      link:     '#c4a3ff',
-      border:   '#7a5cc5',
-      header:   '#3a2658f5',
-      accent:   '#b388ff',
-      accent2:  '#ff7eb3',
-      sparkle:  '#ffd6ff'
+      bg:       '#e8e8ecf5',
+      bgInput:  '#00000010',
+      text:     '#2a2a2e',
+      link:     '#7d7d7d',
+      border:   '#c0c0c8',
+      header:   '#dcdce2f5',
+      accent:   '#8f8f8f',
+      accent2:  '#000000',
+      sparkle:  '#ffffff'
     },
     fontSize: 15
   };
@@ -1032,8 +1032,8 @@
       border: '#7a2a4a', header: '#4a1e35f5', accent: '#ff6b9d', accent2: '#ffb3d1', sparkle: '#ffd6e8'
     },
     light: {
-      bg: '#e8e8ecf5', bgInput: '#00000010', text: '#2a2a2e', link: '#4263eb',
-      border: '#c0c0c8', header: '#dcdce2f5', accent: '#5b6eff', accent2: '#7c9eff', sparkle: '#a0b0ff'
+      bg: '#e8e8ecf5', bgInput: '#00000010', text: '#2a2a2e', link: '#7d7d7d',
+      border: '#c0c0c8', header: '#dcdce2f5', accent: '#8f8f8f', accent2: '#000000', sparkle: '#ffffff'
     },
     dark: {
       bg: '#2a2a2ef0', bgInput: '#ffffff0a', text: '#e0e0e4', link: '#9eb0ff',
