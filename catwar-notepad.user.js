@@ -654,6 +654,21 @@
     }
     .cw-np-set-reset:hover { background: rgba(231,76,60,0.3); }
 
+    /* Palettes */
+    .cw-np-set-palettes { margin-bottom: 6px; }
+    .cw-np-set-palettes > label { display: block; font-size: 15px; color: var(--cw-text); margin-bottom: 5px; }
+    .cw-np-palette-row { display: flex; gap: 6px; }
+    .cw-np-palette {
+      width: 34px; height: 34px;
+      border-radius: 7px;
+      border: 2px solid rgba(255,255,255,0.15);
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--p1) 50%, var(--p2) 50%);
+      transition: transform .12s ease, border-color .12s ease;
+      flex-shrink: 0;
+    }
+    .cw-np-palette:hover { transform: scale(1.12); border-color: rgba(255,255,255,0.5); }
+
     /* Clickable on/off text label (e.g. for sparkles toggle) */
     .cw-np-set-toggle-text {
       font-size: 13px; font-weight: 700;
@@ -816,6 +831,16 @@
         <label>Размер шрифта</label>
         <input type="range" min="10" max="24" step="0.5" value="15" data-fontsize>
         <span class="cw-np-set-fontsize-display" data-fontsize-display>15px</span>
+      </div>
+      <div class="cw-np-set-palettes">
+        <label>Палитры</label>
+        <div class="cw-np-palette-row">
+          <button class="cw-np-palette" data-palette="rose" title="Розовая" style="--p1:#3a1a2e;--p2:#ff6b9d"></button>
+          <button class="cw-np-palette" data-palette="light" title="Светло-серая" style="--p1:#e8e8ec;--p2:#5b6eff"></button>
+          <button class="cw-np-palette" data-palette="dark" title="Тёмно-серая" style="--p1:#2a2a2e;--p2:#7c9eff"></button>
+          <button class="cw-np-palette" data-palette="brown" title="Коричневая" style="--p1:#2e1f14;--p2:#d4a574"></button>
+          <button class="cw-np-palette" data-palette="night" title="Почти чёрная" style="--p1:#0d0d12;--p2:#6c5ce7"></button>
+        </div>
       </div>
       <button class="cw-np-set-reset" data-act="resetColors">Сбросить цвета</button>
     </div>
@@ -995,6 +1020,30 @@
       inp.value = c[key];
     });
   }
+
+  // Palettes — 5 preset color schemes
+  const PALETTES = {
+    rose: {
+      bg: '#3a1a2ef0', bgInput: '#00000020', text: '#ffe4f0', link: '#ff9ecd',
+      border: '#7a2a4a', header: '#4a1e35f5', accent: '#ff6b9d', accent2: '#ffb3d1', sparkle: '#ffd6e8'
+    },
+    light: {
+      bg: '#e8e8ecf5', bgInput: '#00000010', text: '#2a2a2e', link: '#4263eb',
+      border: '#c0c0c8', header: '#dcdce2f5', accent: '#5b6eff', accent2: '#7c9eff', sparkle: '#a0b0ff'
+    },
+    dark: {
+      bg: '#2a2a2ef0', bgInput: '#ffffff0a', text: '#e0e0e4', link: '#9eb0ff',
+      border: '#50505a', header: '#353540f5', accent: '#7c9eff', accent2: '#a0b8ff', sparkle: '#c0d0ff'
+    },
+    brown: {
+      bg: '#2e1f14f0', bgInput: '#00000020', text: '#f0dcc0', link: '#d4a574',
+      border: '#6b4a2a', header: '#3e2818f5', accent: '#d4a574', accent2: '#e8c09a', sparkle: '#ffd6a0'
+    },
+    night: {
+      bg: '#0d0d12f0', bgInput: '#ffffff08', text: '#c0c0d0', link: '#8a7aff',
+      border: '#2a2a3a', header: '#15151ff5', accent: '#6c5ce7', accent2: '#a09aff', sparkle: '#b0a0ff'
+    }
+  };
 
   function toHexColor(v) {
     if (!v) return '#000000';
@@ -2087,6 +2136,19 @@
     store.set('fontSize', state.fontSize);
     applyColors();
     spawnSparkleBurst(panel.getBoundingClientRect().left + 170, panel.getBoundingClientRect().top + 200, 14);
+  });
+
+  // Palette buttons
+  settings.querySelectorAll('.cw-np-palette').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const p = PALETTES[btn.dataset.palette];
+      if (!p) return;
+      state.colors = Object.assign({}, p);
+      store.set('colors', state.colors);
+      applyColors();
+      const r = btn.getBoundingClientRect();
+      spawnSparkleBurst(r.left + r.width / 2, r.top + r.height / 2, 10);
+    });
   });
 
   // Font size slider
