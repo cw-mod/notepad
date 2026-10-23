@@ -1124,7 +1124,6 @@
         if (isNaN(origX)) origX = 0;
         if (isNaN(origY)) origY = 0;
       }
-      e.preventDefault();
       document.addEventListener('mousemove', onMove);
       document.addEventListener('mouseup', onUp);
       document.addEventListener('touchmove', onMove, { passive: false });
@@ -1144,7 +1143,6 @@
         dragStarted = true;
         target.style.transition = 'none';
         if (kind === 'fab') {
-          // Now switch FAB from right/bottom to left/top for dragging
           target.style.right = 'auto';
           target.style.bottom = 'auto';
           target.style.left = origX + 'px';
@@ -1153,6 +1151,7 @@
         spawnSparkleBurst(p.clientX, p.clientY, 4);
       }
       if (!dragStarted) return;
+      e.preventDefault();
       const newPos = clampPos(target, origX + dx, origY + dy);
       target.style.left = newPos.x + 'px';
       target.style.top = newPos.y + 'px';
