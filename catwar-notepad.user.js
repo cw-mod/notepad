@@ -2108,8 +2108,6 @@
         newVal = newVal + oldVal.slice(7);
       }
       state.colors[key] = newVal;
-      state.activePalette = null;
-      store.set('activePalette', null);
       const txtInp = settings.querySelector(`input[type="text"][data-colortext="${key}"]`);
       if (txtInp) txtInp.value = newVal;
       applyColors();
@@ -2129,8 +2127,6 @@
         return;
       }
       state.colors[key] = v;
-      state.activePalette = null;
-      store.set('activePalette', null);
       const pickerInp = settings.querySelector(`input[type="color"][data-color="${key}"]`);
       if (pickerInp) pickerInp.value = toHexColor(v);
       applyColors();
