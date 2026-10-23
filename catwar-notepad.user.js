@@ -1966,11 +1966,11 @@
       return;
     }
     e.stopPropagation();
+    const pr = panel.getBoundingClientRect();
     toggleCollapse();
     const fr = fab.getBoundingClientRect();
     spawnSparkleBurst(fr.left + fr.width / 2, fr.top + fr.height / 2, 12);
-    if (!state.collapsed) {
-      const pr = panel.getBoundingClientRect();
+    if (state.collapsed) {
       spawnSparkleBurst(pr.left + pr.width / 2, pr.top + pr.height / 2, 16);
     }
   });
