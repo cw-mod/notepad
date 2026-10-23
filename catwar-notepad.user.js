@@ -1967,9 +1967,9 @@
     }
     e.stopPropagation();
     toggleCollapse();
+    const fr = fab.getBoundingClientRect();
+    spawnSparkleBurst(fr.left + fr.width / 2, fr.top + fr.height / 2, 12);
     if (!state.collapsed) {
-      const fr = fab.getBoundingClientRect();
-      spawnSparkleBurst(fr.left + fr.width / 2, fr.top + fr.height / 2, 12);
       const pr = panel.getBoundingClientRect();
       spawnSparkleBurst(pr.left + pr.width / 2, pr.top + pr.height / 2, 16);
     }
