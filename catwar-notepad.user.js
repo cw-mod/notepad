@@ -1022,6 +1022,17 @@
       // Fresh install: anchor the FAB to the bottom-right corner.
       state.fabPos = clampPos(fab, window.innerWidth - fab.offsetWidth - 20, window.innerHeight - fab.offsetHeight - 20);
       store.set('fabPos', state.fabPos);
+    } else {
+      // Re-clamp FAB if it ended up outside the viewport (e.g., browser
+      // window is smaller than where the FAB was last positioned).
+      // The FAB must ALWAYS be reachable — it's the only way to open
+      // the panel when collapsed. The panel itself is NOT re-clamped
+      // (per user's request — it stays where the user put it).
+      const clamped = clampPos(fab, state.fabPos.x, state.fabPos.y);
+      if (clamped.x !== state.fabPos.x || clamped.y !== state.fabPos.y) {
+        state.fabPos = clamped;
+        store.set('fabPos', state.fabPos);
+      }
     }
     fab.style.left = state.fabPos.x + 'px';
     fab.style.top = state.fabPos.y + 'px';
