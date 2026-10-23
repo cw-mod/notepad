@@ -533,6 +533,12 @@
       display: inline-flex; align-items: center; justify-content: center;
       flex-shrink: 0;
     }
+    .cw-np-editbtn {
+      width: 38px; height: 30px;
+      padding: 5px !important;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
     .cw-np-iconbtn svg { width: 16px; height: 16px; display: block; }
 
     /* "+" add-tab button (inline at the end of tab bar) */
@@ -817,8 +823,8 @@
     </div>
     <div class="cw-np-body" data-el="body"></div>
     <div class="cw-np-footer">
-      <button class="cw-np-btn" data-act="edit" title="">${icon('pencil')} Редактировать</button>
-      <button class="cw-np-btn primary" data-act="save" title="" style="display:none">${icon('save')} Сохранить</button>
+      <button class="cw-np-btn cw-np-editbtn" data-act="edit" title="">${icon('pencil')}</button>
+      <button class="cw-np-btn primary cw-np-editbtn" data-act="save" title="" style="display:none">${icon('save')}</button>
       <div class="cw-np-footer-spacer">
         <span class="cw-np-credit">by <span data-author></span></span>
       </div>
