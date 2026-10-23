@@ -1018,26 +1018,21 @@
    *  POSITIONING
    * ============================================================ */
   function applyPositions() {
+    // FAB: save preferred position (where the user put it). On display,
+    // clamp to viewport so the FAB is always reachable. But DON'T overwrite
+    // the preferred position — when the window grows back, the FAB returns.
     if (!state.fabPos || typeof state.fabPos.x !== 'number') {
-      // Fresh install: anchor the FAB to the bottom-right corner.
-      state.fabPos = clampPos(fab, window.innerWidth - fab.offsetWidth - 20, window.innerHeight - fab.offsetHeight - 20);
+      state.fabPos = { x: window.innerWidth - fab.offsetWidth - 20, y: window.innerHeight - fab.offsetHeight - 20 };
       store.set('fabPos', state.fabPos);
-    } else {
-      // Re-clamp FAB if it ended up outside the viewport (e.g., browser
-      // window is smaller than where the FAB was last positioned).
-      // The FAB must ALWAYS be reachable — it's the only way to open
-      // the panel when collapsed. The panel itself is NOT re-clamped
-      // (per user's request — it stays where the user put it).
-      const clamped = clampPos(fab, state.fabPos.x, state.fabPos.y);
-      if (clamped.x !== state.fabPos.x || clamped.y !== state.fabPos.y) {
-        state.fabPos = clamped;
-        store.set('fabPos', state.fabPos);
-      }
     }
-    fab.style.left = state.fabPos.x + 'px';
-    fab.style.top = state.fabPos.y + 'px';
-    panel.style.left = state.panelPos.x + 'px';
-    panel.style.top = state.panelPos.y + 'px';
+    const fabDisp = clampPos(fab, state.fabPos.x, state.fabPos.y);
+    fab.style.left = fabDisp.x + 'px';
+    fab.style.top = fabDisp.y + 'px';
+
+    // Panel: same logic — clamp for display, keep preferred position.
+    const panelDisp = clampPos(panel, state.panelPos.x, state.panelPos.y);
+    panel.style.left = panelDisp.x + 'px';
+    panel.style.top = panelDisp.y + 'px';
   }
 
   function clampPos(el, x, y) {
