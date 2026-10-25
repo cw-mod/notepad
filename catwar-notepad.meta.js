@@ -4,6 +4,7 @@
 // @version      1.0.0
 // @description  Сворачиваемый мини-блокнот с вкладками
 // @author       кошечка
+// @icon         https://cw-mod.github.io/notepad/assets/icons/icon-128.png
 // @match        *://catwar.su/*
 // @match        *://*.catwar.su/*
 // @match        *://catwar.net/*
