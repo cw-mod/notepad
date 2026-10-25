@@ -1584,9 +1584,10 @@
     s = s.replace(/(?<!["'>=])(https?:\/\/[^\s<\]]+)/g,
       '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
 
-    // newlines → <br> (skip <pre> blocks)
-    const parts = s.split(/(<pre[^>]*>[\s\S]*?<\/pre>)/g);
-    s = parts.map(p => p.startsWith('<pre') ? p : p.replace(/\n/g, '<br>')).join('');
+    // Newlines: leave them as actual \n characters in the DOM. The
+    // .cw-np-sec-content parent has `white-space: pre-wrap`, so \n renders as a
+    // line break visually, AND survives copy/paste (browsers were dropping <br>
+    // on copy in some cases, gluing paragraphs together).
 
     return s;
   }
